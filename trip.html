@@ -79,15 +79,12 @@
 
 <!-- TOP NAV -->
 <nav class="shrink-0 bg-white dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 z-40">
-  <div class="grid grid-cols-7 text-[9px] font-semibold">
+  <div class="grid grid-cols-6 text-[9px] font-semibold">
     <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-home">
       <i data-lucide="home" class="w-4 h-4"></i><span>בית</span>
     </button>
     <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
       <i data-lucide="route" class="w-4 h-4"></i><span>מסלול</span>
-    </button>
-    <button onclick="switchTab('map')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-map">
-      <i data-lucide="map" class="w-4 h-4"></i><span>מפה</span>
     </button>
     <button onclick="switchTab('lodging')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-lodging">
       <i data-lucide="bed" class="w-4 h-4"></i><span>לינות</span>
@@ -126,10 +123,6 @@
           <i data-lucide="route" class="w-5 h-5 text-greekBlue shrink-0"></i>
           <span class="text-sm font-semibold">המסלול המלא</span>
         </button>
-        <button onclick="switchTab('map')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
-          <i data-lucide="map" class="w-5 h-5 text-greekBlue shrink-0"></i>
-          <span class="text-sm font-semibold">מפה</span>
-        </button>
         <button onclick="switchTab('lodging')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
           <i data-lucide="bed" class="w-5 h-5 text-greekBlue shrink-0"></i>
           <span class="text-sm font-semibold">לינות</span>
@@ -163,26 +156,6 @@
       <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="peloponnese">פלופונס</button>
     </div>
     <div id="dayCards" class="space-y-4"></div>
-  </section>
-
-  <!-- MAP -->
-  <section id="view-map" class="tab-view space-y-4">
-    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">המסלול על המפה</h2>
-    <p class="text-sm opacity-70">לחצו על תחנה כדי לראות פרטים ולנווט אליה.</p>
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
-      <svg id="routeMap" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
-        <path fill="none" stroke="#10b981" stroke-width="2.5" stroke-dasharray="6 6" opacity="0.6" d="M120,70 L150,150 L170,190 L260,230 L330,260 L300,330 L190,400 L150,440"/>
-        <g class="pin" data-info="ioannina" style="cursor:pointer"><circle cx="120" cy="70" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="132" y="66" font-size="13" font-weight="600" fill="currentColor">יואנינה</text></g>
-        <g class="pin" data-info="zagoria" style="cursor:pointer"><circle cx="150" cy="150" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="162" y="146" font-size="13" font-weight="600" fill="currentColor">ויצה · פאפינגקו</text></g>
-        <g class="pin" data-info="astraka" style="cursor:pointer"><circle cx="170" cy="190" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="182" y="186" font-size="13" font-weight="600" fill="currentColor">מקלט אסטרקה</text></g>
-        <g class="pin" data-info="meteora" style="cursor:pointer"><circle cx="260" cy="230" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="272" y="226" font-size="13" font-weight="600" fill="currentColor">מטאורה</text></g>
-        <g class="pin" data-info="athens" style="cursor:pointer"><circle cx="330" cy="260" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="342" y="256" font-size="13" font-weight="600" fill="currentColor">אתונה</text></g>
-        <g class="pin" data-info="kardamyli" style="cursor:pointer"><circle cx="300" cy="330" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="222" y="326" font-size="13" font-weight="600" fill="currentColor">קרדמילי</text></g>
-        <g class="pin" data-info="mani" style="cursor:pointer"><circle cx="190" cy="400" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="60" y="396" font-size="13" font-weight="600" fill="currentColor">מאני</text></g>
-        <g class="pin" data-info="dimitsana" style="cursor:pointer"><circle cx="150" cy="440" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="30" y="460" font-size="13" font-weight="600" fill="currentColor">דימיצאנה</text></g>
-      </svg>
-      <div id="mapInfo" class="mt-4 p-4 bg-stone-50 dark:bg-slate-900 rounded-xl text-sm flex flex-wrap gap-3 items-center min-h-[52px]">בחרו תחנה על המפה.</div>
-    </div>
   </section>
 
   <!-- LODGING -->
@@ -393,11 +366,15 @@ const budgetRows = [
 let visited = {};
 let dayDone = {};
 let collapsedDays = {};
+let dayNotes = {};
 let packChecked = {};
 let budgetValues = {};
 let lodgingNames = {};
 let savedLinks = { athens:[], north:[], pelop:[], general:[] };
-let flightInfo = { outDate:"", outTime:"", outAirport:"", inDate:"", inTime:"", inAirport:"" };
+let flightInfo = {
+  outDate:"2026-10-04", outTime:"06:30", outArrTime:"08:45", outFlight:"GQ 721", outAirport:"TLV → ATH",
+  inDate:"2026-10-19", inTime:"20:30", inArrTime:"22:30", inFlight:"GQ 720", inAirport:"ATH → TLV"
+};
 let tripNotes = [];
 let darkMode = false;
 
@@ -405,6 +382,7 @@ async function loadState(){
   try{ const r = await window.storage.get('visited-stations'); if(r) visited = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('day-done'); if(r) dayDone = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('collapsed-days'); if(r) collapsedDays = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('day-notes'); if(r) dayNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('pack-checked'); if(r) packChecked = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('lodging-names'); if(r) lodgingNames = JSON.parse(r.value); }catch(e){}
@@ -420,6 +398,7 @@ async function saveNotes(){ try{ await window.storage.set('trip-notes', JSON.str
 async function saveVisited(){ try{ await window.storage.set('visited-stations', JSON.stringify(visited)); }catch(e){} }
 async function saveDayDone(){ try{ await window.storage.set('day-done', JSON.stringify(dayDone)); }catch(e){} }
 async function saveCollapsed(){ try{ await window.storage.set('collapsed-days', JSON.stringify(collapsedDays)); }catch(e){} }
+async function saveDayNotes(){ try{ await window.storage.set('day-notes', JSON.stringify(dayNotes)); }catch(e){} }
 async function savePack(){ try{ await window.storage.set('pack-checked', JSON.stringify(packChecked)); }catch(e){} }
 async function saveBudget(){ try{ await window.storage.set('budget-values', JSON.stringify(budgetValues)); }catch(e){} }
 async function saveDark(){ try{ await window.storage.set('dark-mode', String(darkMode)); }catch(e){} }
@@ -431,19 +410,27 @@ function renderFlightInfo(){
   const f = flightInfo;
   document.getElementById('flightInfoForm').innerHTML = `
     <div>
-      <div class="text-xs font-bold text-greekBlue mb-1.5">✈️ טיסת הלוך</div>
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-xs font-bold text-greekBlue">✈️ טיסת הלוך</span>
+        <input type="text" data-f="outFlight" value="${f.outFlight}" placeholder="מס' טיסה" class="flight-input w-24 px-2 py-1 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-left">
+      </div>
+      <input type="text" data-f="outAirport" value="${f.outAirport}" placeholder="TLV → ATH" class="flight-input w-full mb-2 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-left">
       <div class="grid grid-cols-3 gap-2">
         <input type="date" data-f="outDate" value="${f.outDate}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
-        <input type="time" data-f="outTime" value="${f.outTime}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
-        <input type="text" data-f="outAirport" value="${f.outAirport}" placeholder="שדה/חברה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="time" data-f="outTime" value="${f.outTime}" title="המראה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="time" data-f="outArrTime" value="${f.outArrTime}" title="נחיתה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
       </div>
     </div>
     <div>
-      <div class="text-xs font-bold text-rust mb-1.5">🛬 טיסת חזור</div>
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-xs font-bold text-rust">🛬 טיסת חזור</span>
+        <input type="text" data-f="inFlight" value="${f.inFlight}" placeholder="מס' טיסה" class="flight-input w-24 px-2 py-1 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-left">
+      </div>
+      <input type="text" data-f="inAirport" value="${f.inAirport}" placeholder="ATH → TLV" class="flight-input w-full mb-2 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-left">
       <div class="grid grid-cols-3 gap-2">
         <input type="date" data-f="inDate" value="${f.inDate}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
-        <input type="time" data-f="inTime" value="${f.inTime}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
-        <input type="text" data-f="inAirport" value="${f.inAirport}" placeholder="שדה/חברה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="time" data-f="inTime" value="${f.inTime}" title="המראה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="time" data-f="inArrTime" value="${f.inArrTime}" title="נחיתה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
       </div>
     </div>`;
   document.querySelectorAll('.flight-input').forEach(inp=>{
@@ -572,7 +559,11 @@ function dayCard(day){
     </div>` : '';
   const stations = day.stations.map((s,i)=>stationRow(day.id,i,s)).join('');
   const isDone = !!dayDone[day.id];
-  const isCollapsed = !!collapsedDays[day.id];
+  const isCollapsed = collapsedDays.hasOwnProperty(day.id) ? collapsedDays[day.id] : true;
+  const noteVal = dayNotes[day.id] || '';
+  const notePreview = (isCollapsed && noteVal) ? `<div class="flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 mt-2 truncate">
+      <i data-lucide="pin" class="w-3.5 h-3.5 shrink-0"></i><span class="truncate">${noteVal}</span>
+    </div>` : '';
   const cardCls = isDone ? 'opacity-60' : '';
   return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border ${isDone ? 'border-zagoria' : 'border-stone-200 dark:border-slate-700'} p-5 ${cardCls}" id="day-${day.id}">
     <div class="cursor-pointer" onclick="toggleDayCollapse(${day.id})">
@@ -591,9 +582,15 @@ function dayCard(day){
         <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 shrink-0 transition-transform ${isCollapsed ? '' : 'rotate-180'}"></i>
       </div>
       ${travelBadge}
+      ${notePreview}
     </div>
     <div class="${isCollapsed ? 'hidden' : ''}">
       <p class="text-sm italic opacity-70 mt-2 border-r-2 border-rust pr-3">${day.quote}</p>
+      <div class="mt-3">
+        <label class="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 mb-1"><i data-lucide="pin" class="w-3.5 h-3.5"></i> הערה אישית ליום זה</label>
+        <textarea data-day-note="${day.id}" rows="2" placeholder="למשל: לא לשכוח להוציא סים ישראלי מהפלאפון..."
+          class="day-note-input w-full px-2.5 py-1.5 text-sm rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/10">${noteVal}</textarea>
+      </div>
       <div class="timeline-line mt-4 pr-0">${stations}</div>
     </div>
   </div>`;
@@ -623,6 +620,13 @@ function renderItinerary(leg){
   const days = leg === 'all' ? tripDays : tripDays.filter(d=>d.leg===leg);
   wrap.innerHTML = days.map(dayCard).join('');
   lucide.createIcons();
+  document.querySelectorAll('.day-note-input').forEach(ta=>{
+    ta.addEventListener('click', e=> e.stopPropagation());
+    ta.addEventListener('input', ()=>{
+      dayNotes[ta.dataset.dayNote] = ta.value;
+      saveDayNotes();
+    });
+  });
 }
 
 function toggleStation(dayId, idx){
@@ -645,18 +649,6 @@ document.getElementById('legTabs').addEventListener('click', (e)=>{
   btn.classList.remove('bg-stone-100','text-slate-700');
   btn.dataset.active = "1";
   renderItinerary(btn.dataset.leg);
-});
-
-// ==================================================
-// RENDER: MAP
-// ==================================================
-document.getElementById('routeMap').addEventListener('click', (e)=>{
-  const pin = e.target.closest('.pin');
-  if(!pin) return;
-  const p = places[pin.dataset.info];
-  document.getElementById('mapInfo').innerHTML = `
-    <span class="flex-1 min-w-[180px]"><b class="text-rust">${p.name}</b> — ${p.text}</span>
-    <div class="flex gap-2 flex-wrap">${navButtonsHtml(p.lat, p.lon, p.name)}</div>`;
 });
 
 // ==================================================
