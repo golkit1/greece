@@ -260,18 +260,19 @@ function navButtonsHtml(lat, lon, name, size){
 }
 
 const places = {
-  ioannina:  {lat:39.6650, lon:20.8537, name:"יואנינה", text:"נקודת הפתיחה. אגם, מבצר עותומני, שוק ישן."},
-  zagoria:   {lat:39.9106, lon:20.7423, name:"מגאלו פאפינגקו", text:"כפרי אבן זגורוחוריה, גשרי קשת עתיקים ופתח המבוא לגיא הויקוס."},
+  ioannina:  {lat:39.6668074, lon:20.8543494, name:"יואנינה", text:"Hotel Kentrikon — נקודת הפתיחה, אגם ומבצר עותומני."},
+  zagoria:   {lat:39.9678702, lon:20.7199816, name:"מגאלו פאפינגקו", text:"Astra Inn — כפר אבן, גשרי קשת עתיקים ופתח המבוא לגיא הויקוס."},
   astraka:   {lat:39.9325, lon:20.7450, name:"מקלט אסטרקה", text:"לינת הרים בלב פינדוס, נקודת מוצא לפסגות סמוכות."},
   meteora:   {lat:39.7191, lon:21.6303, name:"מטאורה", text:"מנזרים בנויים על צוקי סלע ענקיים."},
   athens:    {lat:37.9645, lon:23.7278, name:"אתונה", text:"עצירה עירונית קצרה, קרוב לאקרופוליס."},
   kardamyli: {lat:36.8942, lon:22.2016, name:"קרדמילי", text:"בסיס קבוע ל־3 לילות, חוף ומבוא להרי המאני."},
   mani:      {lat:36.6667, lon:22.3667, name:"מאני", text:"מגדלי אבן, כפרים מבודדים וטופוגרפיה קשוחה."},
   dimitsana: {lat:37.5926, lon:22.1263, name:"דימיצאנה", text:"כפרי הרים בלב הפלופונס."},
-  vitsa:     {lat:39.7962, lon:20.7784, name:"ויצה", text:"כפר אבן קלאסי בזגורוחוריה."},
-  monodendri:{lat:39.8632, lon:20.7583, name:"מונודנדרי", text:"כפר יציאה נוסף לגיא הויקוס."},
-  arachova:  {lat:38.4795, lon:22.5877, name:"ארכובה", text:"כפר הרים ציורי על מדרונות הפרנסוס, ידוע גם כיעד סקי בחורף."},
-  delphi:    {lat:38.4824, lon:22.5010, name:"דלפי", text:"אתר האורקל העתיק, אחד ממוקדי העולם היווני הקדום, על מדרון הפרנסוס."}
+  vitsa:     {lat:39.8739011, lon:20.7487715, name:"ויצה", text:"Zelinia Rooms — כפר אבן קלאסי בזגורוחוריה."},
+  monodendri:{lat:39.8814511, lon:20.7490922, name:"מונודנדרי (חניון)", text:"חניון לפני הכניסה לגיא הויקוס."},
+  arachova:  {lat:38.4814765, lon:22.5910959, name:"ארכובה", text:"כפר הרים ציורי על מדרונות הפרנסוס, ידוע גם כיעד סקי בחורף."},
+  delphi:    {lat:38.4800928, lon:22.4995954, name:"דלפי", text:"אתר האורקל העתיק, אחד ממוקדי העולם היווני הקדום, על מדרון הפרנסוס."},
+  vodafone:  {lat:39.6667149, lon:20.8524474, name:"וודפון (סים)", text:"סניף וודפון ביואנינה — לרכישת כרטיס סים מקומי."}
 };
 
 const tripDays = [
@@ -284,16 +285,18 @@ const tripDays = [
       {title:"המשך נסיעה ליעד הלינה ביואנינה", desc:"הנסיעה הארוכה ביותר בטיול — כדאי לצאת מוקדם.", place:"ioannina"}
     ]},
   { id:2, leg:'zagoria', date:"5.10 · יום ב׳", route:"יואנינה ← ויצה", overnight:"ויצה / זגוריה",
-    quote:"כניסה לזגוריה — כפרי אבן וגשרי קשת עתיקים.",
+    quote:"רכישת סים מקומי, ואז כניסה לזגוריה — כפרי אבן וגשרי קשת עתיקים.",
     stations:[
+      {title:"רכישת סים בוודפון", desc:"כרטיס סים מקומי לניווט ולאינטרנט לכל הטיול.", place:"vodafone"},
       {title:"נסיעה לאזור זגורוחוריה", desc:"כביש הררי ומתפתל, נוף פתוח על עמק הוויקוס.", place:"vitsa"},
       {title:"סיור בכפר ובגשרים", desc:"אדריכלות האבן האופיינית לזגוריה, גשרי קשת מהמאה ה־18.", place:null}
     ]},
-  { id:3, leg:'zagoria', date:"6–7.10 · יום ג׳–ד׳", route:"מגאלו פאפינגקו ← מקלט אסטרקה", overnight:"מקלט אסטרקה",
-    quote:"ירידה לגיא הוויקוס ועלייה למקלט ההרים — אחד הקניונים העמוקים בעולם.",
+  { id:3, leg:'zagoria', date:"6.10 · יום ג׳", route:"מונודנדרי (חניה) ← גיא הויקוס ← מגאלו פאפינגקו", overnight:"מגאלו פאפינגקו",
+    quote:"חניה לפני הכניסה לוויקוס, והליכה דרך הגיא עד פאפינגקו — אחד הקניונים העמוקים בעולם.",
     stations:[
-      {title:"ירידה לגיא הויקוס", desc:"מגאלו פאפינגקו כנקודת מוצא, מסלול תלול ומאתגר.", place:"zagoria", duration:"6–7 שעות"},
-      {title:"לינה במקלט אסטרקה", desc:"לינת הרים בלב פינדוס, נקודת מוצא לפסגות סמוכות.", place:"astraka"}
+      {title:"נסיעה וחניה לפני הכניסה לוויקוס", desc:"חניון ליד מונודנדרי, נקודת הפתיחה למסלול.", place:"monodendri"},
+      {title:"הליכה דרך גיא הויקוס למגאלו פאפינגקו", desc:"מסלול הליכה מרשים דרך הגיא, מסתיים בכפר.", place:"zagoria", duration:"כ-7 שעות",
+        trail:{ src:"https://mapy.com/s/cehufakopa", distance:"15 ק\"מ", duration:"כ-7 שעות (ללא עצירות)", ascent:"כ-850 מטר", descent:"כ-800 מטר", start:"מונודנדרי", end:"מיקרו/מגאלו פאפינגקו" }}
     ]},
   { id:4, leg:'zagoria', date:"8.10 · יום ה׳", route:"מקלט אסטרקה ← מונודנדרי", overnight:"",
     quote:"יציאה מהאזור, עצירה בכפר מונודנדרי לקראת המשך המסלול דרומה.",
@@ -325,8 +328,9 @@ const tripDays = [
 
 const lodgingData = [
   { key:"ioannina",  nights:"4.10", place:"ioannina" },
-  { key:"vitsa",     nights:"5–7.10", place:"zagoria" },
-  { key:"astraka",   nights:"6.10", place:"astraka" },
+  { key:"vitsa",     nights:"5.10", place:"vitsa" },
+  { key:"papigko",   nights:"6.10", place:"zagoria" },
+  { key:"astraka",   nights:"7.10", place:"astraka" },
   { key:"meteora",   nights:"8.10", place:"meteora" },
   { key:"athens",    nights:"9–10.10", place:"athens" },
   { key:"kardamyli", nights:"11–13.10", place:"kardamyli" }
@@ -501,6 +505,21 @@ function stationRow(dayId, idx, st){
       ${navButtonsHtml(p.lat, p.lon, p.name, 'sm')}
     </div>`;
   }
+  let trailHtml = '';
+  if(st.trail){
+    const t = st.trail;
+    trailHtml = `<div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/10 dark:border-amber-900/30 overflow-hidden">
+      <div class="p-3 grid grid-cols-2 gap-y-1.5 text-xs">
+        <div><span class="opacity-60">נקודת התחלה: </span><b>${t.start}</b></div>
+        <div><span class="opacity-60">נקודת סיום: </span><b>${t.end}</b></div>
+        <div><span class="opacity-60">מרחק: </span><b>${t.distance}</b></div>
+        <div><span class="opacity-60">זמן הליכה: </span><b>${t.duration}</b></div>
+        <div><span class="opacity-60">עליות: </span><b>${t.ascent}</b></div>
+        <div><span class="opacity-60">ירידות: </span><b>${t.descent}</b></div>
+      </div>
+      <iframe style="border:none;display:block" src="${t.src}" width="100%" height="220" loading="lazy"></iframe>
+    </div>`;
+  }
   const dur = st.duration ? `<span class="text-xs font-bold text-rust">⏱ ${st.duration}</span>` : '';
   return `<div class="flex gap-3 relative z-10 pb-4 last:pb-0">
     <input type="checkbox" ${checked} onchange="toggleStation(${dayId},${idx})" class="w-5 h-5 mt-0.5 rounded border-stone-300 shrink-0 cursor-pointer">
@@ -510,6 +529,7 @@ function stationRow(dayId, idx, st){
       </div>
       <p class="text-xs opacity-70 mt-1">${st.desc}</p>
       ${navHtml}
+      ${trailHtml}
     </div>
   </div>`;
 }
