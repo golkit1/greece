@@ -111,6 +111,14 @@
   <section id="view-home" class="tab-view active space-y-5">
     <div id="countdownCard" class="rounded-2xl p-5 bg-gradient-to-br from-greekBlue to-sky-700 text-white shadow-lg"></div>
 
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="plane" class="w-5 h-5 text-greekBlue"></i>
+        <h2 class="font-bold text-sm">פרטי טיסה</h2>
+      </div>
+      <div id="flightInfoForm" class="space-y-3"></div>
+    </div>
+
     <div>
       <h2 class="text-base font-bold mb-3 text-greekDark dark:text-slate-100">ניווט מהיר</h2>
       <div class="grid grid-cols-2 gap-3">
@@ -137,6 +145,10 @@
         <button onclick="switchTab('packing')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
           <i data-lucide="backpack" class="w-5 h-5 text-greekBlue shrink-0"></i>
           <span class="text-sm font-semibold">ציוד</span>
+        </button>
+        <button onclick="switchTab('notes')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
+          <i data-lucide="sticky-note" class="w-5 h-5 text-greekBlue shrink-0"></i>
+          <span class="text-sm font-semibold">הערות</span>
         </button>
       </div>
     </div>
@@ -177,6 +189,25 @@
     <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">לינות בטיול</h2>
     <p class="text-sm opacity-70">מלאו את שם המלון/הצימר בכל עצירה — זה נשמר אוטומטית.</p>
     <div id="lodgingList" class="space-y-3"></div>
+  </section>
+
+  <!-- NOTES -->
+  <section id="view-notes" class="tab-view space-y-4">
+    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">הנחיות והערות</h2>
+    <p class="text-sm opacity-70">טיפים ואזהרות אישיות לטיול — נשמר אוטומטית.</p>
+    <div id="notesList" class="space-y-3"></div>
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4 space-y-2">
+      <div class="flex gap-2">
+        <select id="noteType" class="px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+          <option value="warning">אזהרה ⚠️</option>
+          <option value="tip">טיפ 💡</option>
+          <option value="info">מידע ℹ️</option>
+        </select>
+        <input type="text" id="noteTitle" placeholder="כותרת" class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+      </div>
+      <textarea id="noteBody" placeholder="תוכן ההערה..." rows="2" class="w-full px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900"></textarea>
+      <button onclick="addNote()" class="w-full bg-greekBlue text-white py-2 rounded-lg text-sm font-bold">הוספת הערה</button>
+    </div>
   </section>
 
   <!-- BUDGET -->
@@ -333,6 +364,8 @@ let packChecked = {};
 let budgetValues = {};
 let lodgingNames = {};
 let savedLinks = { athens:[], north:[], pelop:[], general:[] };
+let flightInfo = { outDate:"", outTime:"", outAirport:"", inDate:"", inTime:"", inAirport:"" };
+let tripNotes = [];
 let darkMode = false;
 
 async function loadState(){
@@ -342,10 +375,14 @@ async function loadState(){
   try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('lodging-names'); if(r) lodgingNames = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('flight-info'); if(r) flightInfo = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
 }
 async function saveLodging(){ try{ await window.storage.set('lodging-names', JSON.stringify(lodgingNames)); }catch(e){} }
 async function saveLinks(){ try{ await window.storage.set('saved-links', JSON.stringify(savedLinks)); }catch(e){} }
+async function saveFlight(){ try{ await window.storage.set('flight-info', JSON.stringify(flightInfo)); }catch(e){} }
+async function saveNotes(){ try{ await window.storage.set('trip-notes', JSON.stringify(tripNotes)); }catch(e){} }
 async function saveVisited(){ try{ await window.storage.set('visited-stations', JSON.stringify(visited)); }catch(e){} }
 async function saveDayDone(){ try{ await window.storage.set('day-done', JSON.stringify(dayDone)); }catch(e){} }
 async function savePack(){ try{ await window.storage.set('pack-checked', JSON.stringify(packChecked)); }catch(e){} }
@@ -355,6 +392,81 @@ async function saveDark(){ try{ await window.storage.set('dark-mode', String(dar
 // ==================================================
 // RENDER: HOME
 // ==================================================
+function renderFlightInfo(){
+  const f = flightInfo;
+  document.getElementById('flightInfoForm').innerHTML = `
+    <div>
+      <div class="text-xs font-bold text-greekBlue mb-1.5">✈️ טיסת הלוך</div>
+      <div class="grid grid-cols-3 gap-2">
+        <input type="date" data-f="outDate" value="${f.outDate}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="time" data-f="outTime" value="${f.outTime}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="text" data-f="outAirport" value="${f.outAirport}" placeholder="שדה/חברה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+      </div>
+    </div>
+    <div>
+      <div class="text-xs font-bold text-rust mb-1.5">🛬 טיסת חזור</div>
+      <div class="grid grid-cols-3 gap-2">
+        <input type="date" data-f="inDate" value="${f.inDate}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="time" data-f="inTime" value="${f.inTime}" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="text" data-f="inAirport" value="${f.inAirport}" placeholder="שדה/חברה" class="flight-input col-span-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+      </div>
+    </div>`;
+  document.querySelectorAll('.flight-input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      flightInfo[inp.dataset.f] = inp.value;
+      saveFlight();
+    });
+  });
+}
+
+const noteStyles = {
+  warning: {icon:"triangle-alert", bg:"bg-amber-50 dark:bg-amber-950/20", border:"border-amber-200", iconColor:"text-amber-600"},
+  tip:     {icon:"lightbulb",      bg:"bg-emerald-50 dark:bg-emerald-950/20", border:"border-emerald-200", iconColor:"text-emerald-600"},
+  info:    {icon:"info",           bg:"bg-sky-50 dark:bg-sky-950/20", border:"border-sky-200", iconColor:"text-sky-600"}
+};
+
+function renderNotes(){
+  const list = document.getElementById('notesList');
+  if(tripNotes.length === 0){
+    list.innerHTML = `<p class="text-sm opacity-50 text-center py-4">אין עדיין הערות. הוסיפו למטה.</p>`;
+  } else {
+    list.innerHTML = tripNotes.map((n,i)=>{
+      const s = noteStyles[n.type] || noteStyles.info;
+      return `<div class="rounded-2xl border ${s.border} ${s.bg} p-4">
+        <div class="flex items-start gap-3">
+          <i data-lucide="${s.icon}" class="w-5 h-5 ${s.iconColor} shrink-0 mt-0.5"></i>
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-start gap-2">
+              <h3 class="font-bold text-sm">${n.title}</h3>
+              <button onclick="removeNote(${i})" class="text-slate-400 hover:text-rust shrink-0"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <p class="text-sm opacity-80 mt-1">${n.body}</p>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  lucide.createIcons();
+}
+
+function addNote(){
+  const type = document.getElementById('noteType').value;
+  const title = document.getElementById('noteTitle').value.trim();
+  const body = document.getElementById('noteBody').value.trim();
+  if(!title && !body) return;
+  tripNotes.push({type, title: title || '(ללא כותרת)', body});
+  saveNotes();
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteBody').value = '';
+  renderNotes();
+}
+
+function removeNote(i){
+  tripNotes.splice(i,1);
+  saveNotes();
+  renderNotes();
+}
+
 function renderHome(){
   const start = new Date("2026-10-04T00:00:00");
   const end = new Date("2026-10-19T23:59:59");
@@ -701,6 +813,8 @@ document.getElementById('btnDownload').addEventListener('click', ()=>{
   if(darkMode) document.getElementById('btnDark').innerHTML = '<i data-lucide="sun" class="w-5 h-5"></i>';
   document.querySelector('.leg-btn[data-leg="zagoria"]').dataset.active = "1";
   renderHome();
+  renderFlightInfo();
+  renderNotes();
   renderItinerary('zagoria');
   renderLodging();
   renderLinks();
