@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>הטיול שלנו ליוון</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          greekBlue: '#0d5c96',
+          greekDark: '#12253a',
+          cream: '#fdfbf7',
+          zagoria: '#10b981',
+          meteora: '#8b5cf6',
+          athensC: '#f59e0b',
+          pelop: '#0ea5e9',
+          rust: '#a15a3c'
+        },
+        fontFamily: {
+          serif: ['"Frank Ruhl Libre"', 'serif'],
+          sans: ['Heebo', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html,body{ height:100%; margin:0; padding:0; background:#fdfbf7; }
+  body{ font-family:'Heebo',sans-serif; color:#242b29; overflow-x:hidden; }
+  h1,h2,h3,.serif{ font-family:'Frank Ruhl Libre',serif; }
+  .no-scrollbar::-webkit-scrollbar{ display:none; }
+  .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+  .timeline-line{ position:relative; }
+  .timeline-line::before{
+    content:''; position:absolute; top:0; bottom:0; right:15px; width:2px; background:#e5e7eb;
+  }
+  .dark .timeline-line::before{ background:#334155; }
+  .tab-view{ display:none; }
+  .tab-view.active{ display:block; }
+  .nav-btn.active-tab{ color:#0d5c96; }
+  .dark .nav-btn.active-tab{ color:#38bdf8; }
+  input[type=checkbox]{ accent-color:#0d5c96; }
+  .search-results{ max-height:60vh; overflow-y:auto; }
+</style>
+</head>
+<body class="bg-stone-300 dark:bg-slate-950 transition-colors">
+<div class="max-w-md mx-auto h-screen flex flex-col bg-cream dark:bg-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden relative">
+
+<!-- HEADER -->
+<header class="bg-gradient-to-l from-greekBlue to-sky-700 text-white p-4 shrink-0 shadow-md z-40 relative">
+  <div class="flex items-center justify-between mb-3">
+    <div>
+      <h1 class="text-lg font-extrabold leading-tight">הטיול שלנו ליוון</h1>
+      <p class="text-xs text-sky-100">4–19 באוקטובר 2026</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btnDownload" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all" title="הורדה לשימוש אופליין">
+        <i data-lucide="download" class="w-5 h-5"></i>
+      </button>
+      <button id="btnDark" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg transition-all" title="מצב כהה">
+        <i data-lucide="moon" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </div>
+  <div class="relative">
+    <input type="text" id="globalSearch" placeholder="חיפוש יעד, תחנה או פעילות..."
+      class="w-full py-2 px-3 pr-9 rounded-lg bg-white/10 text-white placeholder-sky-200 text-sm focus:outline-none focus:ring-2 focus:ring-white/50 border border-white/20">
+    <i data-lucide="search" class="w-4 h-4 absolute right-3 top-2.5 text-sky-200"></i>
+  </div>
+  <div id="searchResults" class="search-results hidden mt-2 bg-white text-slate-800 rounded-lg shadow-xl overflow-hidden dark:bg-slate-800 dark:text-slate-100"></div>
+</header>
+
+<!-- MAIN -->
+<main class="flex-1 overflow-y-auto p-4 pb-6 w-full no-scrollbar">
+
+  <!-- HOME -->
+  <section id="view-home" class="tab-view active space-y-5">
+    <div id="countdownCard" class="rounded-2xl p-5 bg-gradient-to-br from-greekBlue to-sky-700 text-white shadow-lg"></div>
+
+    <div>
+      <h2 class="text-base font-bold mb-3 text-greekDark dark:text-slate-100">ניווט מהיר</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="switchTab('itinerary')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
+          <i data-lucide="route" class="w-5 h-5 text-greekBlue shrink-0"></i>
+          <span class="text-sm font-semibold">המסלול המלא</span>
+        </button>
+        <button onclick="switchTab('map')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
+          <i data-lucide="map" class="w-5 h-5 text-greekBlue shrink-0"></i>
+          <span class="text-sm font-semibold">מפה</span>
+        </button>
+        <button onclick="switchTab('budget')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
+          <i data-lucide="wallet" class="w-5 h-5 text-greekBlue shrink-0"></i>
+          <span class="text-sm font-semibold">תקציב</span>
+        </button>
+        <button onclick="switchTab('packing')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
+          <i data-lucide="backpack" class="w-5 h-5 text-greekBlue shrink-0"></i>
+          <span class="text-sm font-semibold">ציוד</span>
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-base font-bold mb-3 text-greekDark dark:text-slate-100">קיצור דרך</h2>
+      <div class="grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="p-3 bg-white border border-stone-200 rounded-xl dark:bg-slate-800 dark:border-slate-700">
+          <div class="text-xl font-black text-greekBlue">16</div><div class="opacity-60 mt-1">ימים</div>
+        </div>
+        <div class="p-3 bg-white border border-stone-200 rounded-xl dark:bg-slate-800 dark:border-slate-700">
+          <div class="text-xl font-black text-greekBlue">3</div><div class="opacity-60 mt-1">אזורים</div>
+        </div>
+        <div class="p-3 bg-white border border-stone-200 rounded-xl dark:bg-slate-800 dark:border-slate-700">
+          <div class="text-xl font-black text-greekBlue">M</div><div class="opacity-60 mt-1">הילוכים</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ITINERARY -->
+  <section id="view-itinerary" class="tab-view space-y-4">
+    <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1" id="legTabs">
+      <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-greekBlue text-white" data-leg="zagoria">זגוריה</button>
+      <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="transit">מטאורה ואתונה</button>
+      <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="peloponnese">פלופונס</button>
+    </div>
+    <div id="dayCards" class="space-y-4"></div>
+  </section>
+
+  <!-- MAP -->
+  <section id="view-map" class="tab-view space-y-4">
+    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">המסלול על המפה</h2>
+    <p class="text-sm opacity-70">לחצו על תחנה כדי לראות פרטים ולנווט אליה.</p>
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
+      <svg id="routeMap" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+        <path fill="none" stroke="#10b981" stroke-width="2.5" stroke-dasharray="6 6" opacity="0.6" d="M120,70 L150,150 L170,190 L260,230 L330,260 L300,330 L190,400 L150,440"/>
+        <g class="pin" data-info="ioannina" style="cursor:pointer"><circle cx="120" cy="70" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="132" y="66" font-size="13" font-weight="600" fill="currentColor">יואנינה</text></g>
+        <g class="pin" data-info="zagoria" style="cursor:pointer"><circle cx="150" cy="150" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="162" y="146" font-size="13" font-weight="600" fill="currentColor">ויצה · פאפינגקו</text></g>
+        <g class="pin" data-info="astraka" style="cursor:pointer"><circle cx="170" cy="190" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="182" y="186" font-size="13" font-weight="600" fill="currentColor">מקלט אסטרקה</text></g>
+        <g class="pin" data-info="meteora" style="cursor:pointer"><circle cx="260" cy="230" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="272" y="226" font-size="13" font-weight="600" fill="currentColor">מטאורה</text></g>
+        <g class="pin" data-info="athens" style="cursor:pointer"><circle cx="330" cy="260" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="342" y="256" font-size="13" font-weight="600" fill="currentColor">אתונה</text></g>
+        <g class="pin" data-info="kardamyli" style="cursor:pointer"><circle cx="300" cy="330" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="222" y="326" font-size="13" font-weight="600" fill="currentColor">קרדמילי</text></g>
+        <g class="pin" data-info="mani" style="cursor:pointer"><circle cx="190" cy="400" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="60" y="396" font-size="13" font-weight="600" fill="currentColor">מאני</text></g>
+        <g class="pin" data-info="dimitsana" style="cursor:pointer"><circle cx="150" cy="440" r="7" fill="#a15a3c" stroke="#fff" stroke-width="3"/><text x="30" y="460" font-size="13" font-weight="600" fill="currentColor">דימיצאנה</text></g>
+      </svg>
+      <div id="mapInfo" class="mt-4 p-4 bg-stone-50 dark:bg-slate-900 rounded-xl text-sm flex flex-wrap gap-3 items-center min-h-[52px]">בחרו תחנה על המפה.</div>
+    </div>
+  </section>
+
+  <!-- BUDGET -->
+  <section id="view-budget" class="tab-view space-y-4">
+    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">תקציב הטיול</h2>
+    <p class="text-sm opacity-70">הסכומים נשמרים אוטומטית (בשקלים).</p>
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 overflow-hidden" id="budgetTable"></div>
+  </section>
+
+  <!-- PACKING -->
+  <section id="view-packing" class="tab-view space-y-4">
+    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">רשימת ציוד</h2>
+    <p class="text-sm opacity-70">אוקטובר בהרי יוון — חם ביום, קריר בלילה ובגובה.</p>
+    <div id="packingGrid" class="space-y-4"></div>
+  </section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="shrink-0 bg-white dark:bg-slate-800 border-t border-stone-200 dark:border-slate-700 z-40">
+  <div class="grid grid-cols-5 text-[11px] font-semibold">
+    <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-home">
+      <i data-lucide="home" class="w-5 h-5"></i><span>בית</span>
+    </button>
+    <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
+      <i data-lucide="route" class="w-5 h-5"></i><span>מסלול</span>
+    </button>
+    <button onclick="switchTab('map')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-map">
+      <i data-lucide="map" class="w-5 h-5"></i><span>מפה</span>
+    </button>
+    <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-budget">
+      <i data-lucide="wallet" class="w-5 h-5"></i><span>תקציב</span>
+    </button>
+    <button onclick="switchTab('packing')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-packing">
+      <i data-lucide="backpack" class="w-5 h-5"></i><span>ציוד</span>
+    </button>
+  </div>
+</nav>
+
+</div>
+<script>
+// ==================================================
+// DATA
+// ==================================================
+function navLinks(lat, lon, name){
+  const mapy = `https://mapy.cz/zakladni?y=${lat}&x=${lon}&z=15&source=coor&id=${lon}%2C${lat}`;
+  const om = `https://omaps.app/map?v=1&ll=${lat},${lon}&n=${encodeURIComponent(name)}`;
+  return {mapy, om};
+}
+
+const places = {
+  ioannina:  {lat:39.6650, lon:20.8537, name:"יואנינה", text:"נקודת הפתיחה. אגם, מבצר עותומני, שוק ישן."},
+  zagoria:   {lat:39.9106, lon:20.7423, name:"מגאלו פאפינגקו", text:"כפרי אבן זגורוחוריה, גשרי קשת עתיקים ופתח המבוא לגיא הויקוס."},
+  astraka:   {lat:39.9325, lon:20.7450, name:"מקלט אסטרקה", text:"לינת הרים בלב פינדוס, נקודת מוצא לפסגות סמוכות."},
+  meteora:   {lat:39.7191, lon:21.6303, name:"מטאורה", text:"מנזרים בנויים על צוקי סלע ענקיים."},
+  athens:    {lat:37.9645, lon:23.7278, name:"אתונה", text:"עצירה עירונית קצרה, קרוב לאקרופוליס."},
+  kardamyli: {lat:36.8942, lon:22.2016, name:"קרדמילי", text:"בסיס קבוע ל־3 לילות, חוף ומבוא להרי המאני."},
+  mani:      {lat:36.6667, lon:22.3667, name:"מאני", text:"מגדלי אבן, כפרים מבודדים וטופוגרפיה קשוחה."},
+  dimitsana: {lat:37.5926, lon:22.1263, name:"דימיצאנה", text:"כפרי הרים בלב הפלופונס."},
+  vitsa:     {lat:39.7962, lon:20.7784, name:"ויצה", text:"כפר אבן קלאסי בזגורוחוריה."},
+  monodendri:{lat:39.8632, lon:20.7583, name:"מונודנדרי", text:"כפר יציאה נוסף לגיא הויקוס."},
+  arachova:  {lat:38.4795, lon:22.5877, name:"ארכובה", text:"כפר הרים ציורי על מדרונות הפרנסוס, ידוע גם כיעד סקי בחורף."},
+  delphi:    {lat:38.4824, lon:22.5010, name:"דלפי", text:"אתר האורקל העתיק, אחד ממוקדי העולם היווני הקדום, על מדרון הפרנסוס."}
+};
+
+const tripDays = [
+  { id:1, leg:'zagoria', date:"4.10 · יום א׳", route:"נחיתה ← ארכובה ← דלפי ← יואנינה", overnight:"יואנינה",
+    quote:"איסוף הרכב מ-Avance, ועצירות בדרך הארוכה צפונה בארכובה ובדלפי.",
+    stations:[
+      {title:"איסוף רכב שכור מ-Avance", desc:"רכב הילוכים ידני — כדאי לבדוק בקבלה, לא בדרך.", place:null},
+      {title:"עצירה בארכובה", desc:"כפר הרים ציורי על מדרונות הפרנסוס, טוב לארוחת צהריים ותצפית.", place:"arachova"},
+      {title:"עצירה בדלפי", desc:"אתר האורקל העתיק — שווה זמן לסיור באתר ובמוזיאון.", place:"delphi"},
+      {title:"המשך נסיעה ליעד הלינה ביואנינה", desc:"הנסיעה הארוכה ביותר בטיול — כדאי לצאת מוקדם.", place:"ioannina"}
+    ]},
+  { id:2, leg:'zagoria', date:"5.10 · יום ב׳", route:"יואנינה ← ויצה", overnight:"ויצה / זגוריה",
+    quote:"כניסה לזגוריה — כפרי אבן וגשרי קשת עתיקים.",
+    stations:[
+      {title:"נסיעה לאזור זגורוחוריה", desc:"כביש הררי ומתפתל, נוף פתוח על עמק הוויקוס.", place:"vitsa"},
+      {title:"סיור בכפר ובגשרים", desc:"אדריכלות האבן האופיינית לזגוריה, גשרי קשת מהמאה ה־18.", place:null}
+    ]},
+  { id:3, leg:'zagoria', date:"6–7.10 · יום ג׳–ד׳", route:"מגאלו פאפינגקו ← מקלט אסטרקה", overnight:"מקלט אסטרקה",
+    quote:"ירידה לגיא הוויקוס ועלייה למקלט ההרים — אחד הקניונים העמוקים בעולם.",
+    stations:[
+      {title:"ירידה לגיא הויקוס", desc:"מגאלו פאפינגקו כנקודת מוצא, מסלול תלול ומאתגר.", place:"zagoria", duration:"6–7 שעות"},
+      {title:"לינה במקלט אסטרקה", desc:"לינת הרים בלב פינדוס, נקודת מוצא לפסגות סמוכות.", place:"astraka"}
+    ]},
+  { id:4, leg:'zagoria', date:"8.10 · יום ה׳", route:"מקלט אסטרקה ← מונודנדרי", overnight:"",
+    quote:"יציאה מהאזור, עצירה בכפר מונודנדרי לקראת המשך המסלול דרומה.",
+    stations:[
+      {title:"נסיעה חזרה דרך מונודנדרי", desc:"כפר נוסף בזגורוחוריה, נקודת יציאה נוספת לוויקוס.", place:"monodendri"}
+    ]},
+  { id:5, leg:'transit', date:"—", route:"יואנינה / זגוריה ← מטאורה", overnight:"קלמפקה",
+    quote:"עצירה בדרך דרומה — מנזרים בנויים על צוקי סלע ענקיים.",
+    stations:[
+      {title:"סיור במנזרי מטאורה", desc:"אחד המראות המזוהים ביותר עם יוון.", place:"meteora"}
+    ]},
+  { id:6, leg:'transit', date:"—", route:"מטאורה ← אתונה", overnight:"קוקאקי",
+    quote:"עצירה עירונית קצרה בין הרגליים הצפוניות והדרומיות של הטיול.",
+    stations:[
+      {title:"זמן חופשי בקוקאקי", desc:"קרוב לאקרופוליס, שכונה נעימה להליכה.", place:"athens"}
+    ]},
+  { id:7, leg:'peloponnese', date:"11–13.10 · יום ח׳–י׳", route:"אתונה ← קרדמילי", overnight:"קרדמילי (3 לילות)",
+    quote:"בסיס קבוע לשלושה לילות, טיולי יום באזור המאני והחוף.",
+    stations:[
+      {title:"התבססות בקרדמילי", desc:"חוף ומבוא נוח להרי המאני.", place:"kardamyli"},
+      {title:"טיולי יום באזור המאני", desc:"מגדלי אבן, כפרים מבודדים וטופוגרפיה קשוחה.", place:"mani"}
+    ]},
+  { id:8, leg:'peloponnese', date:"14–15.10 · יום י״א–י״ב", route:"קרדמילי ← דימיצאנה / סטמניצה", overnight:"",
+    quote:"כפרי הרים בלב הפלופונס, במקום המסלול הרב־יומי המלא של המנאלון.",
+    stations:[
+      {title:"סיור בדימיצאנה וסטמניצה", desc:"כפרי אבן על עמק הלוסיוס, בתי מלאכה ומסלולי הליכה קצרים יותר.", place:"dimitsana"}
+    ]}
+];
+
+const packingData = [
+  { cat:"הליכה והרים", key:"hike", items:["נעלי טיולים גבוהות","שכבות — קל, פליז, מעיל רוח/גשם","תיק יום 20–30 ליטר","מקלות הליכה","פנס ראש","כפפות וכובע גרב","שק שינה קל (למקלט אסטרקה)"] },
+  { cat:"נהיגה ומסמכים", key:"drive", items:["רישיון נהיגה בינלאומי","אישור רכב שכור והדפסות","ביטוח נסיעות מודפס","מטען/מתאם לרכב","כרטיס אשראי + מזומן ביורו"] },
+  { cat:"כללי", key:"gen", items:["מטען נייד + כבלים","קרם הגנה","ערכת עזרה ראשונה קטנה","בגד ים (לחוף במאני)","בקבוק מים לשימוש חוזר"] }
+];
+
+const budgetRows = [
+  {key:"flights", label:"טיסות", note:"הלוך ושוב, לשני נוסעים"},
+  {key:"car", label:"רכב שכור", note:"16 ימים, הילוכים ידניים"},
+  {key:"fuel", label:"דלק וכבישי אגרה", note:"מסלול מלא (TollGuru: אגרות €76.65 + דלק €279.91)", def:1241},
+  {key:"stay", label:"לינה", note:"כולל מקלט אסטרקה"},
+  {key:"food", label:"אוכל", note:"ל־16 יום"},
+  {key:"insurance", label:"ביטוח נסיעות", note:"כולל כיסוי טרקים"},
+  {key:"misc", label:"שונות", note:"כניסות, ציוד, בלת\"מים"}
+];
+
+// ==================================================
+// STORAGE (window.storage instead of localStorage)
+// ==================================================
+let visited = {};
+let packChecked = {};
+let budgetValues = {};
+let darkMode = false;
+
+async function loadState(){
+  try{ const r = await window.storage.get('visited-stations'); if(r) visited = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('pack-checked'); if(r) packChecked = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
+}
+async function saveVisited(){ try{ await window.storage.set('visited-stations', JSON.stringify(visited)); }catch(e){} }
+async function savePack(){ try{ await window.storage.set('pack-checked', JSON.stringify(packChecked)); }catch(e){} }
+async function saveBudget(){ try{ await window.storage.set('budget-values', JSON.stringify(budgetValues)); }catch(e){} }
+async function saveDark(){ try{ await window.storage.set('dark-mode', String(darkMode)); }catch(e){} }
+
+// ==================================================
+// RENDER: HOME
+// ==================================================
+function renderHome(){
+  const start = new Date("2026-10-04T00:00:00");
+  const end = new Date("2026-10-19T23:59:59");
+  const now = new Date();
+  const card = document.getElementById('countdownCard');
+  const diffDays = Math.ceil((start - now) / 86400000);
+  if(now < start){
+    card.innerHTML = `<div class="text-sm text-sky-100 mb-1">עד הטיול</div>
+      <div class="text-4xl font-black">${diffDays} ימים</div>
+      <div class="text-sm text-sky-100 mt-2">יוצאים 4.10.2026 ליואנינה</div>`;
+  } else if(now >= start && now <= end){
+    card.innerHTML = `<div class="text-sm text-sky-100 mb-1">אתם בטיול!</div>
+      <div class="text-2xl font-black">בהצלחה ותיהנו 🇬🇷</div>`;
+  } else {
+    card.innerHTML = `<div class="text-sm text-sky-100 mb-1">הטיול הסתיים</div>
+      <div class="text-2xl font-black">תודה שהשתמשתם באפליקציה!</div>`;
+  }
+}
+
+// ==================================================
+// RENDER: ITINERARY
+// ==================================================
+function stationRow(dayId, idx, st){
+  const key = `d${dayId}-s${idx}`;
+  const checked = visited[key] ? 'checked' : '';
+  const done = visited[key] ? 'opacity-40 line-through' : '';
+  let navHtml = '';
+  if(st.place){
+    const p = places[st.place];
+    const links = navLinks(p.lat, p.lon, p.name);
+    navHtml = `<div class="flex gap-2 mt-2">
+      <a href="${links.mapy}" target="_blank" rel="noopener" class="text-xs font-semibold text-greekBlue dark:text-sky-400 hover:underline">נווט אל: ${p.name}</a>
+      <a href="${links.om}" target="_blank" rel="noopener" class="text-[10px] font-bold text-white bg-zagoria px-1.5 py-0.5 rounded">OM</a>
+    </div>`;
+  }
+  const dur = st.duration ? `<span class="text-xs font-bold text-rust">⏱ ${st.duration}</span>` : '';
+  return `<div class="flex gap-3 relative z-10 pb-4 last:pb-0">
+    <input type="checkbox" ${checked} onchange="toggleStation(${dayId},${idx})" class="w-5 h-5 mt-0.5 rounded border-stone-300 shrink-0 cursor-pointer">
+    <div class="${done} flex-1">
+      <div class="flex items-baseline gap-2 flex-wrap">
+        <span class="font-bold text-sm">${st.title}</span>${dur}
+      </div>
+      <p class="text-xs opacity-70 mt-1">${st.desc}</p>
+      ${navHtml}
+    </div>
+  </div>`;
+}
+
+function dayCard(day){
+  const overnight = day.overnight ? `<span class="text-[11px] font-bold bg-stone-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">🌙 ${day.overnight}</span>` : '';
+  const stations = day.stations.map((s,i)=>stationRow(day.id,i,s)).join('');
+  return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-5" id="day-${day.id}">
+    <div class="flex justify-between items-center flex-wrap gap-2">
+      <span class="text-xs font-bold text-greekBlue dark:text-sky-400">${day.date}</span>
+      ${overnight}
+    </div>
+    <h3 class="text-lg font-bold mt-2 text-greekDark dark:text-slate-100">${day.route}</h3>
+    <p class="text-sm italic opacity-70 mt-2 border-r-2 border-rust pr-3">${day.quote}</p>
+    <div class="timeline-line mt-4 pr-0">${stations}</div>
+  </div>`;
+}
+
+function renderItinerary(leg){
+  const wrap = document.getElementById('dayCards');
+  wrap.innerHTML = tripDays.filter(d=>d.leg===leg).map(dayCard).join('');
+  lucide.createIcons();
+}
+
+function toggleStation(dayId, idx){
+  const key = `d${dayId}-s${idx}`;
+  visited[key] = !visited[key];
+  saveVisited();
+  const activeLeg = document.querySelector('.leg-btn[data-active="1"]')?.dataset.leg || 'zagoria';
+  renderItinerary(activeLeg);
+}
+
+document.getElementById('legTabs').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.leg-btn');
+  if(!btn) return;
+  document.querySelectorAll('.leg-btn').forEach(b=>{
+    b.classList.remove('bg-greekBlue','text-white');
+    b.classList.add('bg-stone-100','text-slate-700');
+    b.removeAttribute('data-active');
+  });
+  btn.classList.add('bg-greekBlue','text-white');
+  btn.classList.remove('bg-stone-100','text-slate-700');
+  btn.dataset.active = "1";
+  renderItinerary(btn.dataset.leg);
+});
+
+// ==================================================
+// RENDER: MAP
+// ==================================================
+document.getElementById('routeMap').addEventListener('click', (e)=>{
+  const pin = e.target.closest('.pin');
+  if(!pin) return;
+  const p = places[pin.dataset.info];
+  const links = navLinks(p.lat, p.lon, p.name);
+  document.getElementById('mapInfo').innerHTML = `
+    <span class="flex-1 min-w-[180px]"><b class="text-rust">${p.name}</b> — ${p.text}</span>
+    <a href="${links.mapy}" target="_blank" rel="noopener" class="text-xs font-bold bg-greekBlue text-white px-3 py-1.5 rounded-full">נווט ב-Mapy ↗</a>
+    <a href="${links.om}" target="_blank" rel="noopener" class="text-xs font-bold bg-zagoria text-white px-3 py-1.5 rounded-full">Organic Maps ↗</a>`;
+});
+
+// ==================================================
+// RENDER: BUDGET
+// ==================================================
+function renderBudget(){
+  const rows = budgetRows.map(r=>{
+    const val = budgetValues[r.key] ?? r.def ?? '';
+    return `<div class="grid grid-cols-[1fr_120px] items-center gap-3 p-4 border-b border-stone-100 dark:border-slate-700 last:border-0">
+      <div>
+        <div class="font-semibold text-sm">${r.label}</div>
+        <div class="text-xs opacity-60 mt-0.5">${r.note}</div>
+      </div>
+      <input type="number" min="0" data-key="${r.key}" value="${val}" placeholder="0"
+        class="budget-input w-full text-left px-2 py-2 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
+    </div>`;
+  }).join('');
+  const total = budgetRows.reduce((s,r)=> s + (Number(budgetValues[r.key] ?? r.def ?? 0)), 0);
+  document.getElementById('budgetTable').innerHTML = rows + `
+    <div class="flex justify-between items-center p-4 bg-greekBlue text-white">
+      <span class="font-semibold">סה"כ</span>
+      <span class="text-xl font-black" id="budgetTotal">₪${total.toLocaleString('he-IL')} <small class="font-normal text-sm opacity-80">ל־2 נוסעים</small></span>
+    </div>`;
+  document.querySelectorAll('.budget-input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      budgetValues[inp.dataset.key] = Number(inp.value) || 0;
+      saveBudget();
+      const t = budgetRows.reduce((s,r)=> s + (Number(budgetValues[r.key] ?? r.def ?? 0)), 0);
+      document.getElementById('budgetTotal').innerHTML = `₪${t.toLocaleString('he-IL')} <small class="font-normal text-sm opacity-80">ל־2 נוסעים</small>`;
+    });
+  });
+}
+
+// ==================================================
+// RENDER: PACKING
+// ==================================================
+function renderPacking(){
+  document.getElementById('packingGrid').innerHTML = packingData.map(cat=>{
+    const items = cat.items.map((it,i)=>{
+      const key = `${cat.key}-${i}`;
+      const checked = packChecked[key] ? 'checked' : '';
+      const done = packChecked[key] ? 'line-through opacity-40' : '';
+      return `<label class="flex items-center gap-2.5 py-1.5 cursor-pointer text-sm">
+        <input type="checkbox" ${checked} onchange="togglePack('${key}')" class="w-4 h-4 rounded">
+        <span class="${done}">${it}</span>
+      </label>`;
+    }).join('');
+    const total = cat.items.length;
+    const done = cat.items.filter((_,i)=>packChecked[`${cat.key}-${i}`]).length;
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-5">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="font-bold text-sm">${cat.cat}</h3>
+        <span class="text-xs opacity-50">${done}/${total}</span>
+      </div>
+      ${items}
+    </div>`;
+  }).join('');
+}
+function togglePack(key){
+  packChecked[key] = !packChecked[key];
+  savePack();
+  renderPacking();
+}
+
+// ==================================================
+// SEARCH
+// ==================================================
+document.getElementById('globalSearch').addEventListener('input', (e)=>{
+  const q = e.target.value.trim();
+  const box = document.getElementById('searchResults');
+  if(q.length < 2){ box.classList.add('hidden'); box.innerHTML=''; return; }
+  const results = [];
+  tripDays.forEach(day=>{
+    day.stations.forEach((st,i)=>{
+      if((st.title+st.desc).includes(q)){
+        results.push({day, st, i});
+      }
+    });
+  });
+  if(results.length === 0){
+    box.innerHTML = `<div class="p-3 text-sm opacity-60">אין תוצאות</div>`;
+  } else {
+    box.innerHTML = results.map(r=>`
+      <button class="w-full text-right p-3 border-b border-stone-100 dark:border-slate-700 hover:bg-stone-50 dark:hover:bg-slate-700 last:border-0"
+        onclick="jumpToStation(${r.day.id}, '${r.day.leg}')">
+        <div class="font-semibold text-sm">${r.st.title}</div>
+        <div class="text-xs opacity-60">${r.day.route} · ${r.day.date}</div>
+      </button>`).join('');
+  }
+  box.classList.remove('hidden');
+});
+function jumpToStation(dayId, leg){
+  document.getElementById('globalSearch').value = '';
+  document.getElementById('searchResults').classList.add('hidden');
+  switchTab('itinerary');
+  document.querySelector(`.leg-btn[data-leg="${leg}"]`).click();
+  setTimeout(()=>{
+    const el = document.getElementById(`day-${dayId}`);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 100);
+}
+
+// ==================================================
+// TABS
+// ==================================================
+function switchTab(tabId){
+  document.querySelectorAll('.tab-view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+tabId).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active-tab'));
+  const btn = document.getElementById('btn-'+tabId);
+  if(btn) btn.classList.add('active-tab');
+  window.scrollTo(0,0);
+}
+
+// ==================================================
+// DARK MODE + DOWNLOAD
+// ==================================================
+document.getElementById('btnDark').addEventListener('click', async ()=>{
+  darkMode = !darkMode;
+  document.documentElement.classList.toggle('dark', darkMode);
+  document.getElementById('btnDark').innerHTML = darkMode ? '<i data-lucide="sun" class="w-5 h-5"></i>' : '<i data-lucide="moon" class="w-5 h-5"></i>';
+  lucide.createIcons();
+  await saveDark();
+});
+
+document.getElementById('btnDownload').addEventListener('click', ()=>{
+  const htmlContent = document.documentElement.outerHTML;
+  const blob = new Blob([htmlContent], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'טיול-יוון-2026.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+// ==================================================
+// INIT
+// ==================================================
+(async function init(){
+  await loadState();
+  document.documentElement.classList.toggle('dark', darkMode);
+  if(darkMode) document.getElementById('btnDark').innerHTML = '<i data-lucide="sun" class="w-5 h-5"></i>';
+  document.querySelector('.leg-btn[data-leg="zagoria"]').dataset.active = "1";
+  renderHome();
+  renderItinerary('zagoria');
+  renderBudget();
+  renderPacking();
+  switchTab('home');
+  lucide.createIcons();
+})();
+</script>
+</body>
+</html>
