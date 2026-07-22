@@ -77,6 +77,33 @@
   <div id="searchResults" class="search-results hidden mt-2 bg-white text-slate-800 rounded-lg shadow-xl overflow-hidden dark:bg-slate-800 dark:text-slate-100"></div>
 </header>
 
+<!-- TOP NAV -->
+<nav class="shrink-0 bg-white dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 z-40">
+  <div class="grid grid-cols-7 text-[9px] font-semibold">
+    <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-home">
+      <i data-lucide="home" class="w-4 h-4"></i><span>בית</span>
+    </button>
+    <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
+      <i data-lucide="route" class="w-4 h-4"></i><span>מסלול</span>
+    </button>
+    <button onclick="switchTab('map')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-map">
+      <i data-lucide="map" class="w-4 h-4"></i><span>מפה</span>
+    </button>
+    <button onclick="switchTab('lodging')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-lodging">
+      <i data-lucide="bed" class="w-4 h-4"></i><span>לינות</span>
+    </button>
+    <button onclick="switchTab('links')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-links">
+      <i data-lucide="link" class="w-4 h-4"></i><span>קישורים</span>
+    </button>
+    <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-budget">
+      <i data-lucide="wallet" class="w-4 h-4"></i><span>תקציב</span>
+    </button>
+    <button onclick="switchTab('packing')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-packing">
+      <i data-lucide="backpack" class="w-4 h-4"></i><span>ציוד</span>
+    </button>
+  </div>
+</nav>
+
 <!-- MAIN -->
 <main class="flex-1 overflow-y-auto p-4 pb-6 w-full no-scrollbar">
 
@@ -95,6 +122,14 @@
           <i data-lucide="map" class="w-5 h-5 text-greekBlue shrink-0"></i>
           <span class="text-sm font-semibold">מפה</span>
         </button>
+        <button onclick="switchTab('lodging')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
+          <i data-lucide="bed" class="w-5 h-5 text-greekBlue shrink-0"></i>
+          <span class="text-sm font-semibold">לינות</span>
+        </button>
+        <button onclick="switchTab('links')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
+          <i data-lucide="link" class="w-5 h-5 text-greekBlue shrink-0"></i>
+          <span class="text-sm font-semibold">קישורים</span>
+        </button>
         <button onclick="switchTab('budget')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
           <i data-lucide="wallet" class="w-5 h-5 text-greekBlue shrink-0"></i>
           <span class="text-sm font-semibold">תקציב</span>
@@ -103,21 +138,6 @@
           <i data-lucide="backpack" class="w-5 h-5 text-greekBlue shrink-0"></i>
           <span class="text-sm font-semibold">ציוד</span>
         </button>
-      </div>
-    </div>
-
-    <div>
-      <h2 class="text-base font-bold mb-3 text-greekDark dark:text-slate-100">קיצור דרך</h2>
-      <div class="grid grid-cols-3 gap-2 text-center text-xs">
-        <div class="p-3 bg-white border border-stone-200 rounded-xl dark:bg-slate-800 dark:border-slate-700">
-          <div class="text-xl font-black text-greekBlue">16</div><div class="opacity-60 mt-1">ימים</div>
-        </div>
-        <div class="p-3 bg-white border border-stone-200 rounded-xl dark:bg-slate-800 dark:border-slate-700">
-          <div class="text-xl font-black text-greekBlue">3</div><div class="opacity-60 mt-1">אזורים</div>
-        </div>
-        <div class="p-3 bg-white border border-stone-200 rounded-xl dark:bg-slate-800 dark:border-slate-700">
-          <div class="text-xl font-black text-greekBlue">M</div><div class="opacity-60 mt-1">הילוכים</div>
-        </div>
       </div>
     </div>
   </section>
@@ -152,11 +172,25 @@
     </div>
   </section>
 
+  <!-- LODGING -->
+  <section id="view-lodging" class="tab-view space-y-4">
+    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">לינות בטיול</h2>
+    <p class="text-sm opacity-70">מלאו את שם המלון/הצימר בכל עצירה — זה נשמר אוטומטית.</p>
+    <div id="lodgingList" class="space-y-3"></div>
+  </section>
+
   <!-- BUDGET -->
   <section id="view-budget" class="tab-view space-y-4">
     <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">תקציב הטיול</h2>
     <p class="text-sm opacity-70">הסכומים נשמרים אוטומטית (בשקלים).</p>
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 overflow-hidden" id="budgetTable"></div>
+  </section>
+
+  <!-- LINKS -->
+  <section id="view-links" class="tab-view space-y-4">
+    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">קישורים שימושיים</h2>
+    <p class="text-sm opacity-70">הוסיפו קישורים לאתרי מידע לפי אזור — נשמר אוטומטית.</p>
+    <div id="linksCategories" class="space-y-4"></div>
   </section>
 
   <!-- PACKING -->
@@ -168,27 +202,6 @@
 
 </main>
 
-<!-- BOTTOM NAV -->
-<nav class="shrink-0 bg-white dark:bg-slate-800 border-t border-stone-200 dark:border-slate-700 z-40">
-  <div class="grid grid-cols-5 text-[11px] font-semibold">
-    <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-home">
-      <i data-lucide="home" class="w-5 h-5"></i><span>בית</span>
-    </button>
-    <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
-      <i data-lucide="route" class="w-5 h-5"></i><span>מסלול</span>
-    </button>
-    <button onclick="switchTab('map')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-map">
-      <i data-lucide="map" class="w-5 h-5"></i><span>מפה</span>
-    </button>
-    <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-budget">
-      <i data-lucide="wallet" class="w-5 h-5"></i><span>תקציב</span>
-    </button>
-    <button onclick="switchTab('packing')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-packing">
-      <i data-lucide="backpack" class="w-5 h-5"></i><span>ציוד</span>
-    </button>
-  </div>
-</nav>
-
 </div>
 <script>
 // ==================================================
@@ -197,7 +210,22 @@
 function navLinks(lat, lon, name){
   const mapy = `https://mapy.cz/zakladni?y=${lat}&x=${lon}&z=15&source=coor&id=${lon}%2C${lat}`;
   const om = `https://omaps.app/map?v=1&ll=${lat},${lon}&n=${encodeURIComponent(name)}`;
-  return {mapy, om};
+  const waze = `https://waze.com/ul?ll=${lat},${lon}&navigate=yes`;
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+  return {mapy, om, waze, gmaps};
+}
+
+// small reusable set of app icon buttons for a given place
+function navButtonsHtml(lat, lon, name, size){
+  const l = navLinks(lat, lon, name);
+  const cls = size === 'sm'
+    ? "text-[10px] font-bold text-white px-1.5 py-0.5 rounded"
+    : "text-xs font-bold text-white px-3 py-1.5 rounded-full";
+  return `
+    <a href="${l.mapy}" target="_blank" rel="noopener" class="${cls} bg-greekBlue" title="Mapy">M</a>
+    <a href="${l.om}" target="_blank" rel="noopener" class="${cls} bg-zagoria" title="Organic Maps">OM</a>
+    <a href="${l.waze}" target="_blank" rel="noopener" class="${cls} bg-sky-500" title="Waze">W</a>
+    <a href="${l.gmaps}" target="_blank" rel="noopener" class="${cls} bg-rust" title="Google Maps">G</a>`;
 }
 
 const places = {
@@ -264,6 +292,22 @@ const tripDays = [
     ]}
 ];
 
+const lodgingData = [
+  { key:"ioannina",  nights:"4.10", place:"ioannina" },
+  { key:"vitsa",     nights:"5–7.10", place:"zagoria" },
+  { key:"astraka",   nights:"6.10", place:"astraka" },
+  { key:"meteora",   nights:"8.10", place:"meteora" },
+  { key:"athens",    nights:"9–10.10", place:"athens" },
+  { key:"kardamyli", nights:"11–13.10", place:"kardamyli" }
+];
+
+const linkCategories = [
+  { key:"athens", label:"אתונה", color:"athensC" },
+  { key:"north",  label:"צפון יוון / זגוריה", color:"zagoria" },
+  { key:"pelop",  label:"פלופונס / מאני", color:"pelop" },
+  { key:"general",label:"כללי", color:"meteora" }
+];
+
 const packingData = [
   { cat:"הליכה והרים", key:"hike", items:["נעלי טיולים גבוהות","שכבות — קל, פליז, מעיל רוח/גשם","תיק יום 20–30 ליטר","מקלות הליכה","פנס ראש","כפפות וכובע גרב","שק שינה קל (למקלט אסטרקה)"] },
   { cat:"נהיגה ומסמכים", key:"drive", items:["רישיון נהיגה בינלאומי","אישור רכב שכור והדפסות","ביטוח נסיעות מודפס","מטען/מתאם לרכב","כרטיס אשראי + מזומן ביורו"] },
@@ -284,17 +328,26 @@ const budgetRows = [
 // STORAGE (window.storage instead of localStorage)
 // ==================================================
 let visited = {};
+let dayDone = {};
 let packChecked = {};
 let budgetValues = {};
+let lodgingNames = {};
+let savedLinks = { athens:[], north:[], pelop:[], general:[] };
 let darkMode = false;
 
 async function loadState(){
   try{ const r = await window.storage.get('visited-stations'); if(r) visited = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('day-done'); if(r) dayDone = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('pack-checked'); if(r) packChecked = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('lodging-names'); if(r) lodgingNames = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
 }
+async function saveLodging(){ try{ await window.storage.set('lodging-names', JSON.stringify(lodgingNames)); }catch(e){} }
+async function saveLinks(){ try{ await window.storage.set('saved-links', JSON.stringify(savedLinks)); }catch(e){} }
 async function saveVisited(){ try{ await window.storage.set('visited-stations', JSON.stringify(visited)); }catch(e){} }
+async function saveDayDone(){ try{ await window.storage.set('day-done', JSON.stringify(dayDone)); }catch(e){} }
 async function savePack(){ try{ await window.storage.set('pack-checked', JSON.stringify(packChecked)); }catch(e){} }
 async function saveBudget(){ try{ await window.storage.set('budget-values', JSON.stringify(budgetValues)); }catch(e){} }
 async function saveDark(){ try{ await window.storage.set('dark-mode', String(darkMode)); }catch(e){} }
@@ -331,10 +384,9 @@ function stationRow(dayId, idx, st){
   let navHtml = '';
   if(st.place){
     const p = places[st.place];
-    const links = navLinks(p.lat, p.lon, p.name);
-    navHtml = `<div class="flex gap-2 mt-2">
-      <a href="${links.mapy}" target="_blank" rel="noopener" class="text-xs font-semibold text-greekBlue dark:text-sky-400 hover:underline">נווט אל: ${p.name}</a>
-      <a href="${links.om}" target="_blank" rel="noopener" class="text-[10px] font-bold text-white bg-zagoria px-1.5 py-0.5 rounded">OM</a>
+    navHtml = `<div class="flex items-center gap-2 mt-2 flex-wrap">
+      <span class="text-xs font-semibold opacity-70">נווט אל ${p.name}:</span>
+      ${navButtonsHtml(p.lat, p.lon, p.name, 'sm')}
     </div>`;
   }
   const dur = st.duration ? `<span class="text-xs font-bold text-rust">⏱ ${st.duration}</span>` : '';
@@ -353,15 +405,35 @@ function stationRow(dayId, idx, st){
 function dayCard(day){
   const overnight = day.overnight ? `<span class="text-[11px] font-bold bg-stone-100 dark:bg-slate-700 px-2.5 py-1 rounded-full">🌙 ${day.overnight}</span>` : '';
   const stations = day.stations.map((s,i)=>stationRow(day.id,i,s)).join('');
-  return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-5" id="day-${day.id}">
+  const isDone = !!dayDone[day.id];
+  const cardCls = isDone ? 'opacity-60' : '';
+  return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border ${isDone ? 'border-zagoria' : 'border-stone-200 dark:border-slate-700'} p-5 ${cardCls}" id="day-${day.id}">
     <div class="flex justify-between items-center flex-wrap gap-2">
       <span class="text-xs font-bold text-greekBlue dark:text-sky-400">${day.date}</span>
-      ${overnight}
+      <div class="flex items-center gap-2">
+        ${overnight}
+        <label class="flex items-center gap-1.5 text-[11px] font-bold cursor-pointer ${isDone ? 'text-zagoria' : 'opacity-60'}">
+          <input type="checkbox" ${isDone?'checked':''} onchange="toggleDayDone(${day.id})" class="w-4 h-4 rounded">
+          יום הושלם
+        </label>
+      </div>
     </div>
-    <h3 class="text-lg font-bold mt-2 text-greekDark dark:text-slate-100">${day.route}</h3>
+    <h3 class="text-lg font-bold mt-2 text-greekDark dark:text-slate-100">${day.route}${isDone ? ' ✓' : ''}</h3>
     <p class="text-sm italic opacity-70 mt-2 border-r-2 border-rust pr-3">${day.quote}</p>
     <div class="timeline-line mt-4 pr-0">${stations}</div>
   </div>`;
+}
+
+function toggleDayDone(dayId){
+  dayDone[dayId] = !dayDone[dayId];
+  const day = tripDays.find(d=>d.id===dayId);
+  if(dayDone[dayId]){
+    day.stations.forEach((s,i)=>{ visited[`d${dayId}-s${i}`] = true; });
+    saveVisited();
+  }
+  saveDayDone();
+  const activeLeg = document.querySelector('.leg-btn[data-active="1"]')?.dataset.leg || 'zagoria';
+  renderItinerary(activeLeg);
 }
 
 function renderItinerary(leg){
@@ -399,12 +471,93 @@ document.getElementById('routeMap').addEventListener('click', (e)=>{
   const pin = e.target.closest('.pin');
   if(!pin) return;
   const p = places[pin.dataset.info];
-  const links = navLinks(p.lat, p.lon, p.name);
   document.getElementById('mapInfo').innerHTML = `
     <span class="flex-1 min-w-[180px]"><b class="text-rust">${p.name}</b> — ${p.text}</span>
-    <a href="${links.mapy}" target="_blank" rel="noopener" class="text-xs font-bold bg-greekBlue text-white px-3 py-1.5 rounded-full">נווט ב-Mapy ↗</a>
-    <a href="${links.om}" target="_blank" rel="noopener" class="text-xs font-bold bg-zagoria text-white px-3 py-1.5 rounded-full">Organic Maps ↗</a>`;
+    <div class="flex gap-2 flex-wrap">${navButtonsHtml(p.lat, p.lon, p.name)}</div>`;
 });
+
+// ==================================================
+// RENDER: LODGING
+// ==================================================
+function renderLodging(){
+  document.getElementById('lodgingList').innerHTML = lodgingData.map(l=>{
+    const p = places[l.place];
+    const nameVal = lodgingNames[l.key] || '';
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
+      <div class="flex items-start gap-3">
+        <div class="bg-stone-100 dark:bg-slate-700 p-2.5 rounded-xl shrink-0">
+          <i data-lucide="bed" class="w-5 h-5 text-greekBlue"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-baseline gap-2 flex-wrap">
+            <span class="font-bold text-sm">${p.name}</span>
+            <span class="text-xs opacity-60">${l.nights}</span>
+          </div>
+          <input type="text" placeholder="שם המלון / הצימר..." value="${nameVal}"
+            data-lodge-key="${l.key}"
+            class="lodge-input w-full mt-2 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
+          <div class="flex items-center gap-2 mt-2 flex-wrap">${navButtonsHtml(p.lat, p.lon, p.name, 'sm')}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+  document.querySelectorAll('.lodge-input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      lodgingNames[inp.dataset.lodgeKey] = inp.value;
+      saveLodging();
+    });
+  });
+}
+
+// ==================================================
+// RENDER: LINKS
+// ==================================================
+function renderLinks(){
+  document.getElementById('linksCategories').innerHTML = linkCategories.map(cat=>{
+    const items = (savedLinks[cat.key] || []).map((l,i)=>`
+      <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+        <a href="${l.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 text-sm font-semibold text-greekBlue dark:text-sky-400 hover:underline truncate">${l.title}</a>
+        <button onclick="removeLink('${cat.key}',${i})" class="text-slate-400 hover:text-rust shrink-0" title="מחיקה">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>`).join('');
+    const empty = (savedLinks[cat.key]||[]).length === 0 ? `<p class="text-xs opacity-50 py-1">אין עדיין קישורים.</p>` : '';
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-${cat.color}"></span>
+        <h3 class="font-bold text-sm">${cat.label}</h3>
+      </div>
+      ${items}${empty}
+      <div class="flex gap-2 mt-3">
+        <input type="text" placeholder="כותרת" data-cat="${cat.key}" class="link-title-input w-1/3 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="url" placeholder="https://..." data-cat="${cat.key}" class="link-url-input flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <button onclick="addLink('${cat.key}')" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוסף</button>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function addLink(catKey){
+  const titleInp = document.querySelector(`.link-title-input[data-cat="${catKey}"]`);
+  const urlInp = document.querySelector(`.link-url-input[data-cat="${catKey}"]`);
+  let title = titleInp.value.trim();
+  let url = urlInp.value.trim();
+  if(!url) return;
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if(!title) title = url.replace(/^https?:\/\//,'').split('/')[0];
+  if(!savedLinks[catKey]) savedLinks[catKey] = [];
+  savedLinks[catKey].push({title, url});
+  saveLinks();
+  renderLinks();
+}
+
+function removeLink(catKey, idx){
+  savedLinks[catKey].splice(idx,1);
+  saveLinks();
+  renderLinks();
+}
 
 // ==================================================
 // RENDER: BUDGET
@@ -549,6 +702,8 @@ document.getElementById('btnDownload').addEventListener('click', ()=>{
   document.querySelector('.leg-btn[data-leg="zagoria"]').dataset.active = "1";
   renderHome();
   renderItinerary('zagoria');
+  renderLodging();
+  renderLinks();
   renderBudget();
   renderPacking();
   switchTab('home');
