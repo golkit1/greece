@@ -498,6 +498,7 @@ async function loadState(){
   }
   try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-docs'); if(r) savedDocs = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('doc-category-order'); if(r) docCategoryOrder = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('flight-info'); if(r) flightInfo = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
@@ -1046,16 +1047,25 @@ function removeLink(catKey, idx){
 // ==================================================
 // RENDER: DOCUMENTS
 // ==================================================
+let docCategoryOrder = null;
+
 function renderDocuments(){
-  document.getElementById('documentsCategories').innerHTML = docCategories.map(cat=>{
+  if(!docCategoryOrder) docCategoryOrder = docCategories.map(c=>c.key);
+  const orderedCats = docCategoryOrder.map(k=>docCategories.find(c=>c.key===k)).filter(Boolean);
+
+  document.getElementById('documentsCategories').innerHTML = orderedCats.map(cat=>{
     const items = (savedDocs[cat.key] || []).map((l,i)=>`
-      <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+      <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0 doc-item-row"
+        draggable="true" data-doc-cat="${cat.key}" data-doc-idx="${i}">
+        <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
         <a href="${l.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 text-sm font-semibold text-greekBlue dark:text-sky-400 hover:underline truncate">${l.title}</a>
         <button onclick="removeDoc('${cat.key}',${i})" class="text-xs font-bold text-rust hover:underline shrink-0">מחיקה</button>
       </div>`).join('');
     const empty = (savedDocs[cat.key]||[]).length === 0 ? `<p class="text-xs opacity-50 py-1">אין עדיין מסמכים.</p>` : '';
-    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4 doc-cat-card"
+      draggable="true" data-doc-cat-key="${cat.key}">
       <div class="flex items-center gap-2 mb-2">
+        <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
         <span class="w-2.5 h-2.5 rounded-full bg-${cat.color}"></span>
         <h3 class="font-bold text-sm">${cat.label}</h3>
       </div>
@@ -1068,7 +1078,62 @@ function renderDocuments(){
     </div>`;
   }).join('');
   safeIcons();
+  wireDocDragAndDrop();
 }
+
+function wireDocDragAndDrop(){
+  const grid = document.getElementById('documentsCategories');
+
+  // category cards reorder
+  let draggedCatKey = null;
+  grid.querySelectorAll('.doc-cat-card').forEach(card=>{
+    card.addEventListener('dragstart', (e)=>{
+      // don't hijack drags that started on an item row (handled separately)
+      if(e.target.closest('.doc-item-row')){ e.stopPropagation(); return; }
+      draggedCatKey = card.dataset.docCatKey;
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+    card.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      if(!draggedCatKey || draggedCatKey === card.dataset.docCatKey) return;
+      const fromIdx = docCategoryOrder.indexOf(draggedCatKey);
+      const toIdx = docCategoryOrder.indexOf(card.dataset.docCatKey);
+      docCategoryOrder.splice(fromIdx,1);
+      docCategoryOrder.splice(toIdx,0,draggedCatKey);
+      draggedCatKey = null;
+      saveDocCategoryOrder();
+      renderDocuments();
+    });
+  });
+
+  // item rows reorder (within same category)
+  let draggedItem = null;
+  grid.querySelectorAll('.doc-item-row').forEach(row=>{
+    row.addEventListener('dragstart', (e)=>{
+      e.stopPropagation();
+      draggedItem = { cat: row.dataset.docCat, idx: Number(row.dataset.docIdx) };
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragover', (e)=>{ e.preventDefault(); e.stopPropagation(); });
+    row.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(!draggedItem) return;
+      const targetCat = row.dataset.docCat;
+      const targetIdx = Number(row.dataset.docIdx);
+      if(draggedItem.cat !== targetCat) { draggedItem = null; return; }
+      const arr = savedDocs[targetCat];
+      const [moved] = arr.splice(draggedItem.idx, 1);
+      arr.splice(targetIdx, 0, moved);
+      draggedItem = null;
+      saveDocs();
+      renderDocuments();
+    });
+  });
+}
+
+async function saveDocCategoryOrder(){ try{ await window.storage.set('doc-category-order', JSON.stringify(docCategoryOrder)); }catch(e){} }
 
 function addDoc(catKey){
   const titleInp = document.querySelector(`.doc-title-input[data-doccat="${catKey}"]`);
