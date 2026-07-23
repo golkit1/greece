@@ -98,9 +98,6 @@
     <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
       <i data-lucide="route" class="w-4 h-4"></i><span>מסלול</span>
     </button>
-    <button onclick="switchTab('lodging')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-lodging">
-      <i data-lucide="bed" class="w-4 h-4"></i><span>לינות</span>
-    </button>
     <button onclick="switchTab('links')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-links">
       <i data-lucide="link" class="w-4 h-4"></i><span>קישורים</span>
     </button>
@@ -148,13 +145,6 @@
       <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="peloponnese">פלופונס</button>
     </div>
     <div id="dayCards" class="space-y-4"></div>
-  </section>
-
-  <!-- LODGING -->
-  <section id="view-lodging" class="tab-view space-y-4">
-    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">לינות בטיול</h2>
-    <p class="text-sm opacity-70">מלאו את שם המלון/הצימר בכל עצירה — זה נשמר אוטומטית.</p>
-    <div id="lodgingList" class="space-y-3"></div>
   </section>
 
   <!-- NOTES -->
@@ -340,7 +330,7 @@ const tripDays = [
       {title:"הליכת יום לאגן הדרקון וחזרה", desc:"אגם הרים קטן מתחת לפסגות הטיימפי, יעד הליכה פופולרי מהמקלט.", place:"drakolimni", duration:"כ-4 שעות הלוך ושוב מהמקלט (הערכה)",
         trail:{ src:"https://mapy.com/s/razubokonu", start:"מקלט אסטרקה", end:"אגן הדרקון (הלוך ושוב)" }}
     ]},
-  { id:9, leg:'zagoria', date:"8.10 · יום חמישי", route:"מקלט אסטרקה ← צפלובו", overnight:"",
+  { id:9, leg:'zagoria', date:"8.10 · יום חמישי", route:"מקלט אסטרקה ← צפלובו", overnight:"צפלובו (או עוד לילה?)",
     travel:{ time:"כ-5:20 שעות (5 ש' הליכה + 20 ד' מונית)", km:"כ-27 ק\"מ (הערכה)" },
     quote:"ירידה לצפלובו. משם מונית חזרה לרכב במונודנדרי, או החלטה בשטח להישאר עוד לילה.",
     stations:[
@@ -395,18 +385,6 @@ const tripDays = [
     ]}
 ];
 
-const DEFAULT_LODGING = [
-  { key:"ioannina",  nights:"4.10", place:"ioannina" },
-  { key:"vitsa",     nights:"5.10", place:"vitsa" },
-  { key:"papigko",   nights:"6.10", place:"zagoria" },
-  { key:"astraka",   nights:"7.10", place:"astraka" },
-  { key:"tsepelovo", nights:"8.10 (או ליל נוסף?)", place:"tsepelovo" },
-  { key:"athens",    nights:"9–10.10 (בהתאם להחלטה)", place:"athens" },
-  { key:"kardamyli", nights:"11–13.10", place:"kardamyli" },
-  { key:"dimitsana", nights:"14.10", place:"dimitsana" },
-  { key:"athens2",   nights:"15–19.10", place:"athens" }
-];
-
 const linkCategories = [
   { key:"athens", label:"אתונה", color:"athensC" },
   { key:"north",  label:"צפון יוון / זגוריה", color:"zagoria" },
@@ -450,9 +428,7 @@ let dayNoteFormOpen = {};
 let packingCategories = null; // null = not yet loaded/initialized
 let packIdCounter = 1;
 let budgetValues = {};
-let lodgingEntries = null; // null = not yet loaded/initialized
-let lodgingIdCounter = 1;
-let editingLodgingId = null;
+let dayLodging = { 8: { hotelName: "Kaza Guesthouse", url: "" } };
 let savedLinks = { athens:[], north:[], pelop:[], general:[] };
 let savedDocs = { flights:[], car:[], lodging:[], insurance:[], other:[] };
 let flightInfo = {
@@ -482,20 +458,7 @@ async function loadState(){
     }));
   }
   try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
-  try{
-    const r = await window.storage.get('lodging-entries');
-    if(r){
-      const parsed = JSON.parse(r.value);
-      lodgingEntries = parsed.entries;
-      lodgingIdCounter = parsed.idCounter || 1;
-    }
-  }catch(e){}
-  if(!lodgingEntries){
-    lodgingEntries = DEFAULT_LODGING.map(l=>{
-      const p = places[l.place];
-      return { id: lodgingIdCounter++, nights: l.nights, title: p.name, hotelName: (l.key==='dimitsana' ? 'Kaza Guesthouse' : ''), lat: p.lat, lon: p.lon };
-    });
-  }
+  try{ const r = await window.storage.get('day-lodging'); if(r) dayLodging = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-docs'); if(r) savedDocs = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('doc-category-order'); if(r) docCategoryOrder = JSON.parse(r.value); }catch(e){}
@@ -503,7 +466,7 @@ async function loadState(){
   try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
 }
-async function saveLodging(){ try{ await window.storage.set('lodging-entries', JSON.stringify({entries: lodgingEntries, idCounter: lodgingIdCounter})); }catch(e){} }
+async function saveDayLodging(){ try{ await window.storage.set('day-lodging', JSON.stringify(dayLodging)); }catch(e){} }
 async function saveLinks(){ try{ await window.storage.set('saved-links', JSON.stringify(savedLinks)); }catch(e){} }
 async function saveDocs(){ try{ await window.storage.set('saved-docs', JSON.stringify(savedDocs)); }catch(e){} }
 async function saveFlight(){ try{ await window.storage.set('flight-info', JSON.stringify(flightInfo)); }catch(e){} }
@@ -730,6 +693,21 @@ function dayCard(day){
     </div>` : '';
   const cardCls = isDone ? 'opacity-60' : '';
 
+  let lodgingHtml = '';
+  if(day.overnight){
+    const lg = dayLodging[day.id] || { hotelName:'', url:'' };
+    lodgingHtml = `<div class="mt-3 rounded-xl border border-sky-200 dark:border-sky-900/40 bg-sky-50 dark:bg-sky-950/10 p-3">
+      <div class="flex items-center gap-1.5 text-xs font-bold text-greekBlue mb-2"><i data-lucide="bed" class="w-3.5 h-3.5"></i> לינה: ${day.overnight}</div>
+      <div class="flex gap-2">
+        <input type="text" placeholder="שם המלון/הצימר..." value="${lg.hotelName}" data-lodge-day="${day.id}" data-lodge-field="hotelName"
+          class="day-lodge-input flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-900">
+        <input type="url" placeholder="קישור להזמנה..." value="${lg.url}" data-lodge-day="${day.id}" data-lodge-field="url"
+          class="day-lodge-input flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-900">
+      </div>
+      ${lg.url ? `<a href="${lg.url}" target="_blank" rel="noopener" class="inline-block mt-2 text-xs font-bold text-greekBlue hover:underline">פתיחת ההזמנה ↗</a>` : ''}
+    </div>`;
+  }
+
   const editIdx = editingDayNote[day.id];
   const editingNote = (editIdx !== undefined && editIdx !== null) ? notes[editIdx] : null;
 
@@ -800,6 +778,7 @@ function dayCard(day){
     </div>
     <div class="${isCollapsed ? 'hidden' : ''}">
       <p class="text-sm italic opacity-70 mt-2 border-r-2 border-rust pr-3">${day.quote}</p>
+      ${lodgingHtml}
       ${notesFormHtml}
       <div class="timeline-line mt-4 pr-0">${stations}</div>
     </div>
@@ -830,6 +809,16 @@ function renderItinerary(leg){
   const days = leg === 'all' ? tripDays : tripDays.filter(d=>d.leg===leg);
   wrap.innerHTML = days.map(dayCard).join('');
   safeIcons();
+  document.querySelectorAll('.day-lodge-input').forEach(inp=>{
+    inp.addEventListener('click', e=> e.stopPropagation());
+    inp.addEventListener('input', ()=>{
+      const dayId = inp.dataset.lodgeDay;
+      const field = inp.dataset.lodgeField;
+      if(!dayLodging[dayId]) dayLodging[dayId] = { hotelName:'', url:'' };
+      dayLodging[dayId][field] = inp.value;
+      saveDayLodging();
+    });
+  });
 }
 
 function currentActiveLeg(){
@@ -903,98 +892,6 @@ document.getElementById('legTabs').addEventListener('click', (e)=>{
 // ==================================================
 // RENDER: LODGING
 // ==================================================
-function renderLodging(){
-  const itemsHtml = lodgingEntries.map(l=>{
-    if(editingLodgingId === l.id){
-      return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border-2 border-greekBlue p-4">
-        <div class="flex gap-2 mb-2">
-          <input type="text" id="editLodgeTitle-${l.id}" value="${l.title}" placeholder="שם היעד" class="flex-1 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
-          <input type="text" id="editLodgeNights-${l.id}" value="${l.nights}" placeholder="תאריכים" class="w-32 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
-        </div>
-        <div class="flex gap-2">
-          <button onclick="saveEditLodging(${l.id})" class="flex-1 bg-greekBlue text-white py-1.5 rounded-lg text-xs font-bold">שמירה</button>
-          <button onclick="cancelEditLodging()" class="px-4 bg-stone-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 py-1.5 rounded-lg text-xs font-bold">ביטול</button>
-        </div>
-      </div>`;
-    }
-    const navHtml = (l.lat && l.lon) ? `<div class="flex items-center gap-2 mt-2 flex-wrap">${navButtonsHtml(l.lat, l.lon, l.title, 'sm')}</div>`
-      : `<p class="text-[11px] opacity-50 mt-2">אין מיקום — שלחו קישור Google Maps כדי להוסיף ניווט.</p>`;
-    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
-      <div class="flex items-start gap-3">
-        <div class="bg-stone-100 dark:bg-slate-700 p-2.5 rounded-xl shrink-0">
-          <i data-lucide="bed" class="w-5 h-5 text-greekBlue"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex justify-between items-baseline gap-2 flex-wrap">
-            <span class="font-bold text-sm">${l.title}</span>
-            <span class="text-xs opacity-60">${l.nights}</span>
-          </div>
-          <input type="text" placeholder="שם המלון / הצימר..." value="${l.hotelName}"
-            data-lodge-id="${l.id}"
-            class="lodge-input w-full mt-2 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
-          ${navHtml}
-          <div class="flex gap-3 mt-2">
-            <button onclick="editLodging(${l.id})" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
-            <button onclick="removeLodging(${l.id})" class="text-[11px] font-bold text-rust hover:underline">מחיקה</button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  const addHtml = `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-dashed border-stone-300 dark:border-slate-600 p-4">
-    <div class="flex gap-2">
-      <input type="text" id="newLodgeTitle" placeholder="יעד חדש..." class="flex-1 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
-      <input type="text" id="newLodgeNights" placeholder="תאריכים" class="w-28 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
-      <button onclick="addLodging()" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוספה</button>
-    </div>
-  </div>`;
-
-  document.getElementById('lodgingList').innerHTML = itemsHtml + addHtml;
-  safeIcons();
-  document.querySelectorAll('.lodge-input').forEach(inp=>{
-    inp.addEventListener('input', ()=>{
-      const entry = lodgingEntries.find(l=>l.id === Number(inp.dataset.lodgeId));
-      entry.hotelName = inp.value;
-      saveLodging();
-    });
-  });
-}
-
-function editLodging(id){
-  editingLodgingId = id;
-  renderLodging();
-}
-
-function cancelEditLodging(){
-  editingLodgingId = null;
-  renderLodging();
-}
-
-function saveEditLodging(id){
-  const entry = lodgingEntries.find(l=>l.id === id);
-  entry.title = document.getElementById(`editLodgeTitle-${id}`).value.trim() || entry.title;
-  entry.nights = document.getElementById(`editLodgeNights-${id}`).value.trim() || entry.nights;
-  editingLodgingId = null;
-  saveLodging();
-  renderLodging();
-}
-
-function addLodging(){
-  const title = document.getElementById('newLodgeTitle').value.trim();
-  const nights = document.getElementById('newLodgeNights').value.trim();
-  if(!title) return;
-  lodgingEntries.push({ id: lodgingIdCounter++, title, nights: nights || '', hotelName:'', lat:null, lon:null });
-  saveLodging();
-  renderLodging();
-}
-
-function removeLodging(id){
-  lodgingEntries = lodgingEntries.filter(l=>l.id !== id);
-  saveLodging();
-  renderLodging();
-}
-
 // ==================================================
 // RENDER: LINKS
 // ==================================================
@@ -1392,7 +1289,6 @@ document.getElementById('btnDownload').addEventListener('click', ()=>{
   renderFlightInfo();
   renderNotes();
   renderItinerary('zagoria');
-  renderLodging();
   renderLinks();
   renderDocuments();
   renderBudget();
