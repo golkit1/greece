@@ -79,23 +79,29 @@
 
 <!-- TOP NAV -->
 <nav class="shrink-0 bg-white dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 z-40">
-  <div class="grid grid-cols-6 text-[9px] font-semibold">
-    <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-home">
+  <div class="flex overflow-x-auto no-scrollbar text-[10px] font-semibold">
+    <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-home">
       <i data-lucide="home" class="w-4 h-4"></i><span>בית</span>
     </button>
-    <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
+    <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
       <i data-lucide="route" class="w-4 h-4"></i><span>מסלול</span>
     </button>
-    <button onclick="switchTab('lodging')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-lodging">
+    <button onclick="switchTab('lodging')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-lodging">
       <i data-lucide="bed" class="w-4 h-4"></i><span>לינות</span>
     </button>
-    <button onclick="switchTab('links')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-links">
+    <button onclick="switchTab('links')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-links">
       <i data-lucide="link" class="w-4 h-4"></i><span>קישורים</span>
     </button>
-    <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-budget">
+    <button onclick="switchTab('documents')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-documents">
+      <i data-lucide="file-text" class="w-4 h-4"></i><span>מסמכים</span>
+    </button>
+    <button onclick="switchTab('notes')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-notes">
+      <i data-lucide="sticky-note" class="w-4 h-4"></i><span>הערות</span>
+    </button>
+    <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-budget">
       <i data-lucide="wallet" class="w-4 h-4"></i><span>תקציב</span>
     </button>
-    <button onclick="switchTab('packing')" class="nav-btn flex flex-col items-center gap-1 py-2.5 text-slate-400 hover:text-greekBlue" id="btn-packing">
+    <button onclick="switchTab('packing')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-packing">
       <i data-lucide="backpack" class="w-4 h-4"></i><span>ציוד</span>
     </button>
   </div>
@@ -108,43 +114,17 @@
   <section id="view-home" class="tab-view active space-y-5">
     <div id="countdownCard" class="rounded-2xl p-5 bg-gradient-to-br from-greekBlue to-sky-700 text-white shadow-lg"></div>
 
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <i data-lucide="plane" class="w-5 h-5 text-greekBlue"></i>
-        <h2 class="font-bold text-sm">פרטי טיסה</h2>
-      </div>
-      <div id="flightInfoForm" class="space-y-3"></div>
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 overflow-hidden">
+      <button onclick="toggleFlightCard()" id="flightToggleBtn" class="w-full flex items-center justify-between p-4 text-right">
+        <div class="flex items-center gap-2">
+          <i data-lucide="plane" class="w-5 h-5 text-greekBlue"></i>
+          <h2 class="font-bold text-sm">פרטי טיסה</h2>
+        </div>
+        <span id="flightChevron" class="transition-transform text-slate-400"><i data-lucide="chevron-down" class="w-5 h-5"></i></span>
+      </button>
+      <div id="flightInfoForm" class="hidden space-y-3 p-4 pt-0"></div>
     </div>
 
-    <div>
-      <h2 class="text-base font-bold mb-3 text-greekDark dark:text-slate-100">ניווט מהיר</h2>
-      <div class="grid grid-cols-2 gap-3">
-        <button onclick="switchTab('itinerary')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
-          <i data-lucide="route" class="w-5 h-5 text-greekBlue shrink-0"></i>
-          <span class="text-sm font-semibold">המסלול המלא</span>
-        </button>
-        <button onclick="switchTab('lodging')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
-          <i data-lucide="bed" class="w-5 h-5 text-greekBlue shrink-0"></i>
-          <span class="text-sm font-semibold">לינות</span>
-        </button>
-        <button onclick="switchTab('links')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
-          <i data-lucide="link" class="w-5 h-5 text-greekBlue shrink-0"></i>
-          <span class="text-sm font-semibold">קישורים</span>
-        </button>
-        <button onclick="switchTab('budget')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
-          <i data-lucide="wallet" class="w-5 h-5 text-greekBlue shrink-0"></i>
-          <span class="text-sm font-semibold">תקציב</span>
-        </button>
-        <button onclick="switchTab('packing')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
-          <i data-lucide="backpack" class="w-5 h-5 text-greekBlue shrink-0"></i>
-          <span class="text-sm font-semibold">ציוד</span>
-        </button>
-        <button onclick="switchTab('notes')" class="p-3 bg-white border border-stone-200 rounded-xl hover:border-greekBlue/50 transition-all flex items-center gap-3 dark:bg-slate-800 dark:border-slate-700">
-          <i data-lucide="sticky-note" class="w-5 h-5 text-greekBlue shrink-0"></i>
-          <span class="text-sm font-semibold">הערות</span>
-        </button>
-      </div>
-    </div>
   </section>
 
   <!-- ITINERARY -->
@@ -205,6 +185,13 @@
     <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">קישורים שימושיים</h2>
     <p class="text-sm opacity-70">הוסיפו קישורים לאתרי מידע לפי אזור — נשמר אוטומטית.</p>
     <div id="linksCategories" class="space-y-4"></div>
+  </section>
+
+  <!-- DOCUMENTS -->
+  <section id="view-documents" class="tab-view space-y-4">
+    <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">מסמכים ואישורים</h2>
+    <p class="text-sm opacity-70">שימו לב: כאן שומרים <b>קישורים</b> למסמכים (למשל קישור לאישור הזמנה, או קובץ ב-Google Drive) — לא ניתן להעלות קבצים ישירות.</p>
+    <div id="documentsCategories" class="space-y-4"></div>
   </section>
 
   <!-- PACKING -->
@@ -384,7 +371,15 @@ const linkCategories = [
   { key:"general",label:"כללי", color:"meteora" }
 ];
 
-const packingData = [
+const docCategories = [
+  { key:"flights", label:"טיסות", color:"athensC" },
+  { key:"car",     label:"רכב שכור", color:"rust" },
+  { key:"lodging", label:"לינה / Booking", color:"greekBlue" },
+  { key:"insurance",label:"ביטוח נסיעות", color:"zagoria" },
+  { key:"other",   label:"אחר", color:"meteora" }
+];
+
+const DEFAULT_PACKING = [
   { cat:"הליכה והרים", key:"hike", items:["נעלי טיולים גבוהות","שכבות — קל, פליז, מעיל רוח/גשם","תיק יום 20–30 ליטר","מקלות הליכה","פנס ראש","כפפות וכובע גרב","שק שינה קל (למקלט אסטרקה)"] },
   { cat:"נהיגה ומסמכים", key:"drive", items:["רישיון נהיגה בינלאומי","אישור רכב שכור והדפסות","ביטוח נסיעות מודפס","מטען/מתאם לרכב","כרטיס אשראי + מזומן ביורו"] },
   { cat:"כללי", key:"gen", items:["מטען נייד + כבלים","קרם הגנה","ערכת עזרה ראשונה קטנה","בגד ים (לחוף במאני)","בקבוק מים לשימוש חוזר"] }
@@ -409,10 +404,12 @@ let collapsedDays = {};
 let dayNotes = {};
 let editingDayNote = {};
 let dayNoteFormOpen = {};
-let packChecked = {};
+let packingCategories = null; // null = not yet loaded/initialized
+let packIdCounter = 1;
 let budgetValues = {};
 let lodgingNames = { dimitsana: "Kaza Guesthouse" };
 let savedLinks = { athens:[], north:[], pelop:[], general:[] };
+let savedDocs = { flights:[], car:[], lodging:[], insurance:[], other:[] };
 let flightInfo = {
   outDate:"2026-10-04", outTime:"06:30", outArrTime:"08:45", outFlight:"GQ 721", outAirport:"TLV → ATH",
   inDate:"2026-10-19", inTime:"20:30", inArrTime:"22:30", inFlight:"GQ 720", inAirport:"ATH → TLV"
@@ -425,29 +422,51 @@ async function loadState(){
   try{ const r = await window.storage.get('day-done'); if(r) dayDone = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('collapsed-days'); if(r) collapsedDays = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('day-notes'); if(r) dayNotes = JSON.parse(r.value); }catch(e){}
-  try{ const r = await window.storage.get('pack-checked'); if(r) packChecked = JSON.parse(r.value); }catch(e){}
+  try{
+    const r = await window.storage.get('packing-items');
+    if(r){
+      const parsed = JSON.parse(r.value);
+      packingCategories = parsed.categories;
+      packIdCounter = parsed.idCounter || 1;
+    }
+  }catch(e){}
+  if(!packingCategories){
+    packingCategories = DEFAULT_PACKING.map(cat=>({
+      key: cat.key, cat: cat.cat,
+      items: cat.items.map(text=>({ id: packIdCounter++, text, checked:false }))
+    }));
+  }
   try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('lodging-names'); if(r) lodgingNames = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('saved-docs'); if(r) savedDocs = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('flight-info'); if(r) flightInfo = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
 }
 async function saveLodging(){ try{ await window.storage.set('lodging-names', JSON.stringify(lodgingNames)); }catch(e){} }
 async function saveLinks(){ try{ await window.storage.set('saved-links', JSON.stringify(savedLinks)); }catch(e){} }
+async function saveDocs(){ try{ await window.storage.set('saved-docs', JSON.stringify(savedDocs)); }catch(e){} }
 async function saveFlight(){ try{ await window.storage.set('flight-info', JSON.stringify(flightInfo)); }catch(e){} }
 async function saveNotes(){ try{ await window.storage.set('trip-notes', JSON.stringify(tripNotes)); }catch(e){} }
 async function saveVisited(){ try{ await window.storage.set('visited-stations', JSON.stringify(visited)); }catch(e){} }
 async function saveDayDone(){ try{ await window.storage.set('day-done', JSON.stringify(dayDone)); }catch(e){} }
 async function saveCollapsed(){ try{ await window.storage.set('collapsed-days', JSON.stringify(collapsedDays)); }catch(e){} }
 async function saveDayNotes(){ try{ await window.storage.set('day-notes', JSON.stringify(dayNotes)); }catch(e){} }
-async function savePack(){ try{ await window.storage.set('pack-checked', JSON.stringify(packChecked)); }catch(e){} }
+async function savePack(){ try{ await window.storage.set('packing-items', JSON.stringify({categories: packingCategories, idCounter: packIdCounter})); }catch(e){} }
 async function saveBudget(){ try{ await window.storage.set('budget-values', JSON.stringify(budgetValues)); }catch(e){} }
 async function saveDark(){ try{ await window.storage.set('dark-mode', String(darkMode)); }catch(e){} }
 
 // ==================================================
 // RENDER: HOME
 // ==================================================
+function toggleFlightCard(){
+  const body = document.getElementById('flightInfoForm');
+  const chevron = document.getElementById('flightChevron');
+  const nowHidden = body.classList.toggle('hidden');
+  if(chevron) chevron.classList.toggle('rotate-180', !nowHidden);
+}
+
 function renderFlightInfo(){
   const f = flightInfo;
   document.getElementById('flightInfoForm').innerHTML = `
@@ -906,6 +925,53 @@ function removeLink(catKey, idx){
 }
 
 // ==================================================
+// RENDER: DOCUMENTS
+// ==================================================
+function renderDocuments(){
+  document.getElementById('documentsCategories').innerHTML = docCategories.map(cat=>{
+    const items = (savedDocs[cat.key] || []).map((l,i)=>`
+      <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+        <a href="${l.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 text-sm font-semibold text-greekBlue dark:text-sky-400 hover:underline truncate">${l.title}</a>
+        <button onclick="removeDoc('${cat.key}',${i})" class="text-xs font-bold text-rust hover:underline shrink-0">מחיקה</button>
+      </div>`).join('');
+    const empty = (savedDocs[cat.key]||[]).length === 0 ? `<p class="text-xs opacity-50 py-1">אין עדיין מסמכים.</p>` : '';
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-${cat.color}"></span>
+        <h3 class="font-bold text-sm">${cat.label}</h3>
+      </div>
+      ${items}${empty}
+      <div class="flex gap-2 mt-3">
+        <input type="text" placeholder="כותרת (למשל: אישור Avance)" data-doccat="${cat.key}" class="doc-title-input w-1/3 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="url" placeholder="קישור למסמך..." data-doccat="${cat.key}" class="doc-url-input flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <button onclick="addDoc('${cat.key}')" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוסף</button>
+      </div>
+    </div>`;
+  }).join('');
+  safeIcons();
+}
+
+function addDoc(catKey){
+  const titleInp = document.querySelector(`.doc-title-input[data-doccat="${catKey}"]`);
+  const urlInp = document.querySelector(`.doc-url-input[data-doccat="${catKey}"]`);
+  let title = titleInp.value.trim();
+  let url = urlInp.value.trim();
+  if(!url) return;
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if(!title) title = url.replace(/^https?:\/\//,'').split('/')[0];
+  if(!savedDocs[catKey]) savedDocs[catKey] = [];
+  savedDocs[catKey].push({title, url});
+  saveDocs();
+  renderDocuments();
+}
+
+function removeDoc(catKey, idx){
+  savedDocs[catKey].splice(idx,1);
+  saveDocs();
+  renderDocuments();
+}
+
+// ==================================================
 // RENDER: BUDGET
 // ==================================================
 function renderBudget(){
@@ -939,30 +1005,122 @@ function renderBudget(){
 // ==================================================
 // RENDER: PACKING
 // ==================================================
+let editingPackItemId = null;
+
 function renderPacking(){
-  document.getElementById('packingGrid').innerHTML = packingData.map(cat=>{
-    const items = cat.items.map((it,i)=>{
-      const key = `${cat.key}-${i}`;
-      const checked = packChecked[key] ? 'checked' : '';
-      const done = packChecked[key] ? 'line-through opacity-40' : '';
-      return `<label class="flex items-center gap-2.5 py-1.5 cursor-pointer text-sm">
-        <input type="checkbox" ${checked} onchange="togglePack('${key}')" class="w-4 h-4 rounded">
-        <span class="${done}">${it}</span>
-      </label>`;
+  const catsHtml = packingCategories.map(cat=>{
+    const itemsHtml = cat.items.map(it=>{
+      if(editingPackItemId === it.id){
+        return `<div class="flex items-center gap-2 py-1.5">
+          <input type="text" id="editItem-${it.id}" value="${it.text}" class="flex-1 px-2 py-1 text-sm rounded-lg border border-greekBlue bg-stone-50 dark:bg-slate-900">
+          <button onclick="saveEditPackItem('${cat.key}',${it.id})" class="text-[11px] font-bold text-greekBlue hover:underline shrink-0">שמירה</button>
+          <button onclick="cancelEditPackItem()" class="text-[11px] font-bold text-slate-400 hover:underline shrink-0">ביטול</button>
+        </div>`;
+      }
+      const done = it.checked ? 'line-through opacity-40' : '';
+      return `<div class="flex items-center gap-2.5 py-1.5 text-sm">
+        <input type="checkbox" ${it.checked?'checked':''} onchange="togglePack('${cat.key}',${it.id})" class="w-4 h-4 rounded cursor-pointer">
+        <span class="flex-1 ${done}">${it.text}</span>
+        <button onclick="editPackItem(${it.id})" class="text-[11px] font-bold text-greekBlue hover:underline shrink-0">עריכה</button>
+        <button onclick="removePackItem('${cat.key}',${it.id})" class="text-[11px] font-bold text-rust hover:underline shrink-0">מחיקה</button>
+      </div>`;
     }).join('');
     const total = cat.items.length;
-    const done = cat.items.filter((_,i)=>packChecked[`${cat.key}-${i}`]).length;
+    const done = cat.items.filter(it=>it.checked).length;
     return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-5">
       <div class="flex justify-between items-center mb-2">
-        <h3 class="font-bold text-sm">${cat.cat}</h3>
-        <span class="text-xs opacity-50">${done}/${total}</span>
+        <h3 class="font-bold text-sm cursor-pointer hover:underline" onclick="renameCategoryPrompt('${cat.key}')" title="לחצו לשינוי שם">${cat.cat} ✏️</h3>
+        <div class="flex items-center gap-2">
+          <span class="text-xs opacity-50">${done}/${total}</span>
+          <button onclick="removePackCategory('${cat.key}')" class="text-[11px] font-bold text-rust hover:underline">מחיקת קטגוריה</button>
+        </div>
       </div>
-      ${items}
+      ${itemsHtml}
+      <div class="flex gap-2 mt-2">
+        <input type="text" id="newItem-${cat.key}" placeholder="פריט חדש..." class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <button onclick="addPackItem('${cat.key}')" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוספה</button>
+      </div>
     </div>`;
   }).join('');
+
+  const addCatHtml = `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-dashed border-stone-300 dark:border-slate-600 p-4">
+    <div class="flex gap-2">
+      <input type="text" id="newCategoryName" placeholder="שם קטגוריה חדשה..." class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+      <button onclick="addPackCategory()" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">קטגוריה חדשה</button>
+    </div>
+  </div>`;
+
+  document.getElementById('packingGrid').innerHTML = catsHtml + addCatHtml;
 }
-function togglePack(key){
-  packChecked[key] = !packChecked[key];
+
+function renameCategoryPrompt(catKey){
+  const cat = packingCategories.find(c=>c.key===catKey);
+  const newName = window.prompt('שם חדש לקטגוריה:', cat.cat);
+  if(newName && newName.trim()){
+    cat.cat = newName.trim();
+    savePack();
+    renderPacking();
+  }
+}
+
+function editPackItem(itemId){
+  editingPackItemId = itemId;
+  renderPacking();
+}
+
+function cancelEditPackItem(){
+  editingPackItemId = null;
+  renderPacking();
+}
+
+function saveEditPackItem(catKey, itemId){
+  const inp = document.getElementById(`editItem-${itemId}`);
+  const text = inp.value.trim();
+  if(!text) return;
+  const cat = packingCategories.find(c=>c.key===catKey);
+  const item = cat.items.find(i=>i.id===itemId);
+  item.text = text;
+  editingPackItemId = null;
+  savePack();
+  renderPacking();
+}
+
+function togglePack(catKey, itemId){
+  const cat = packingCategories.find(c=>c.key===catKey);
+  const item = cat.items.find(i=>i.id===itemId);
+  item.checked = !item.checked;
+  savePack();
+  renderPacking();
+}
+
+function addPackItem(catKey){
+  const inp = document.getElementById(`newItem-${catKey}`);
+  const text = inp.value.trim();
+  if(!text) return;
+  const cat = packingCategories.find(c=>c.key===catKey);
+  cat.items.push({ id: packIdCounter++, text, checked:false });
+  savePack();
+  renderPacking();
+}
+
+function removePackItem(catKey, itemId){
+  const cat = packingCategories.find(c=>c.key===catKey);
+  cat.items = cat.items.filter(i=>i.id!==itemId);
+  savePack();
+  renderPacking();
+}
+
+function addPackCategory(){
+  const inp = document.getElementById('newCategoryName');
+  const name = inp.value.trim();
+  if(!name) return;
+  packingCategories.push({ key:'cat'+packIdCounter++, cat:name, items:[] });
+  savePack();
+  renderPacking();
+}
+
+function removePackCategory(catKey){
+  packingCategories = packingCategories.filter(c=>c.key!==catKey);
   savePack();
   renderPacking();
 }
@@ -1052,6 +1210,7 @@ document.getElementById('btnDownload').addEventListener('click', ()=>{
   renderItinerary('zagoria');
   renderLodging();
   renderLinks();
+  renderDocuments();
   renderBudget();
   renderPacking();
   switchTab('home');
