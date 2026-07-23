@@ -51,6 +51,18 @@
 </style>
 </head>
 <body class="bg-stone-300 dark:bg-slate-950 transition-colors">
+<div id="passwordGate" class="fixed inset-0 z-[999] bg-greekDark flex items-center justify-center p-6">
+  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-xs text-center">
+    <div class="text-3xl mb-3">🔒</div>
+    <h2 class="font-bold text-lg mb-1 text-greekDark dark:text-slate-100">הטיול שלנו ליוון</h2>
+    <p class="text-sm opacity-60 mb-4">הזינו סיסמה כדי להיכנס</p>
+    <input type="password" id="gatePassword" inputmode="numeric" placeholder="סיסמה"
+      class="w-full text-center text-lg px-3 py-2.5 rounded-lg border border-stone-300 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 mb-3">
+    <p id="gateError" class="text-xs text-rust mb-2 hidden">סיסמה שגויה, נסו שוב.</p>
+    <button onclick="checkGatePassword()" class="w-full bg-greekBlue text-white py-2.5 rounded-lg font-bold">כניסה</button>
+  </div>
+</div>
+
 <div class="max-w-md mx-auto h-screen flex flex-col bg-cream dark:bg-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden relative">
 
 <!-- HEADER -->
@@ -176,7 +188,7 @@
   <!-- BUDGET -->
   <section id="view-budget" class="tab-view space-y-4">
     <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">תקציב הטיול</h2>
-    <p class="text-sm opacity-70">הסכומים נשמרים אוטומטית (בשקלים).</p>
+    <p class="text-sm opacity-70">הסכומים נשמרים אוטומטית (ביורו).</p>
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 overflow-hidden" id="budgetTable"></div>
   </section>
 
@@ -208,6 +220,37 @@
 // ==================================================
 // DATA
 // ==================================================
+// ==================================================
+// PASSWORD GATE
+// ==================================================
+const GATE_PASSWORD = "2288";
+
+function unlockGate(){
+  document.getElementById('passwordGate').style.display = 'none';
+  try{ localStorage.setItem('trip-gate-unlocked', '1'); }catch(e){}
+}
+
+function checkGatePassword(){
+  const val = document.getElementById('gatePassword').value.trim();
+  if(val === GATE_PASSWORD){
+    unlockGate();
+  } else {
+    document.getElementById('gateError').classList.remove('hidden');
+  }
+}
+
+document.getElementById('gatePassword').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') checkGatePassword();
+});
+
+(function initGate(){
+  try{
+    if(localStorage.getItem('trip-gate-unlocked') === '1'){
+      document.getElementById('passwordGate').style.display = 'none';
+    }
+  }catch(e){}
+})();
+
 function safeIcons(){
   try{ if(window.lucide) lucide.createIcons(); }catch(e){ console.warn('lucide icons failed to load, continuing without them', e); }
 }
@@ -352,7 +395,7 @@ const tripDays = [
     ]}
 ];
 
-const lodgingData = [
+const DEFAULT_LODGING = [
   { key:"ioannina",  nights:"4.10", place:"ioannina" },
   { key:"vitsa",     nights:"5.10", place:"vitsa" },
   { key:"papigko",   nights:"6.10", place:"zagoria" },
@@ -388,7 +431,7 @@ const DEFAULT_PACKING = [
 const budgetRows = [
   {key:"flights", label:"טיסות", note:"הלוך ושוב, לשני נוסעים"},
   {key:"car", label:"רכב שכור", note:"16 ימים, הילוכים ידניים"},
-  {key:"fuel", label:"דלק וכבישי אגרה", note:"מסלול מלא (TollGuru: אגרות €76.65 + דלק €279.91)", def:1241},
+  {key:"fuel", label:"דלק וכבישי אגרה", note:"מסלול מלא (TollGuru: אגרות €76.65 + דלק €279.91)", def:357},
   {key:"stay", label:"לינה", note:"כולל מקלט אסטרקה"},
   {key:"food", label:"אוכל", note:"ל־16 יום"},
   {key:"insurance", label:"ביטוח נסיעות", note:"כולל כיסוי טרקים"},
@@ -407,7 +450,9 @@ let dayNoteFormOpen = {};
 let packingCategories = null; // null = not yet loaded/initialized
 let packIdCounter = 1;
 let budgetValues = {};
-let lodgingNames = { dimitsana: "Kaza Guesthouse" };
+let lodgingEntries = null; // null = not yet loaded/initialized
+let lodgingIdCounter = 1;
+let editingLodgingId = null;
 let savedLinks = { athens:[], north:[], pelop:[], general:[] };
 let savedDocs = { flights:[], car:[], lodging:[], insurance:[], other:[] };
 let flightInfo = {
@@ -437,14 +482,27 @@ async function loadState(){
     }));
   }
   try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
-  try{ const r = await window.storage.get('lodging-names'); if(r) lodgingNames = JSON.parse(r.value); }catch(e){}
+  try{
+    const r = await window.storage.get('lodging-entries');
+    if(r){
+      const parsed = JSON.parse(r.value);
+      lodgingEntries = parsed.entries;
+      lodgingIdCounter = parsed.idCounter || 1;
+    }
+  }catch(e){}
+  if(!lodgingEntries){
+    lodgingEntries = DEFAULT_LODGING.map(l=>{
+      const p = places[l.place];
+      return { id: lodgingIdCounter++, nights: l.nights, title: p.name, hotelName: (l.key==='dimitsana' ? 'Kaza Guesthouse' : ''), lat: p.lat, lon: p.lon };
+    });
+  }
   try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-docs'); if(r) savedDocs = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('flight-info'); if(r) flightInfo = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
 }
-async function saveLodging(){ try{ await window.storage.set('lodging-names', JSON.stringify(lodgingNames)); }catch(e){} }
+async function saveLodging(){ try{ await window.storage.set('lodging-entries', JSON.stringify({entries: lodgingEntries, idCounter: lodgingIdCounter})); }catch(e){} }
 async function saveLinks(){ try{ await window.storage.set('saved-links', JSON.stringify(savedLinks)); }catch(e){} }
 async function saveDocs(){ try{ await window.storage.set('saved-docs', JSON.stringify(savedDocs)); }catch(e){} }
 async function saveFlight(){ try{ await window.storage.set('flight-info', JSON.stringify(flightInfo)); }catch(e){} }
@@ -845,9 +903,21 @@ document.getElementById('legTabs').addEventListener('click', (e)=>{
 // RENDER: LODGING
 // ==================================================
 function renderLodging(){
-  document.getElementById('lodgingList').innerHTML = lodgingData.map(l=>{
-    const p = places[l.place];
-    const nameVal = lodgingNames[l.key] || '';
+  const itemsHtml = lodgingEntries.map(l=>{
+    if(editingLodgingId === l.id){
+      return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border-2 border-greekBlue p-4">
+        <div class="flex gap-2 mb-2">
+          <input type="text" id="editLodgeTitle-${l.id}" value="${l.title}" placeholder="שם היעד" class="flex-1 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
+          <input type="text" id="editLodgeNights-${l.id}" value="${l.nights}" placeholder="תאריכים" class="w-32 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
+        </div>
+        <div class="flex gap-2">
+          <button onclick="saveEditLodging(${l.id})" class="flex-1 bg-greekBlue text-white py-1.5 rounded-lg text-xs font-bold">שמירה</button>
+          <button onclick="cancelEditLodging()" class="px-4 bg-stone-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 py-1.5 rounded-lg text-xs font-bold">ביטול</button>
+        </div>
+      </div>`;
+    }
+    const navHtml = (l.lat && l.lon) ? `<div class="flex items-center gap-2 mt-2 flex-wrap">${navButtonsHtml(l.lat, l.lon, l.title, 'sm')}</div>`
+      : `<p class="text-[11px] opacity-50 mt-2">אין מיקום — שלחו קישור Google Maps כדי להוסיף ניווט.</p>`;
     return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
       <div class="flex items-start gap-3">
         <div class="bg-stone-100 dark:bg-slate-700 p-2.5 rounded-xl shrink-0">
@@ -855,24 +925,73 @@ function renderLodging(){
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex justify-between items-baseline gap-2 flex-wrap">
-            <span class="font-bold text-sm">${p.name}</span>
+            <span class="font-bold text-sm">${l.title}</span>
             <span class="text-xs opacity-60">${l.nights}</span>
           </div>
-          <input type="text" placeholder="שם המלון / הצימר..." value="${nameVal}"
-            data-lodge-key="${l.key}"
+          <input type="text" placeholder="שם המלון / הצימר..." value="${l.hotelName}"
+            data-lodge-id="${l.id}"
             class="lodge-input w-full mt-2 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
-          <div class="flex items-center gap-2 mt-2 flex-wrap">${navButtonsHtml(p.lat, p.lon, p.name, 'sm')}</div>
+          ${navHtml}
+          <div class="flex gap-3 mt-2">
+            <button onclick="editLodging(${l.id})" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
+            <button onclick="removeLodging(${l.id})" class="text-[11px] font-bold text-rust hover:underline">מחיקה</button>
+          </div>
         </div>
       </div>
     </div>`;
   }).join('');
+
+  const addHtml = `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-dashed border-stone-300 dark:border-slate-600 p-4">
+    <div class="flex gap-2">
+      <input type="text" id="newLodgeTitle" placeholder="יעד חדש..." class="flex-1 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
+      <input type="text" id="newLodgeNights" placeholder="תאריכים" class="w-28 px-2.5 py-1.5 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
+      <button onclick="addLodging()" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוספה</button>
+    </div>
+  </div>`;
+
+  document.getElementById('lodgingList').innerHTML = itemsHtml + addHtml;
   safeIcons();
   document.querySelectorAll('.lodge-input').forEach(inp=>{
     inp.addEventListener('input', ()=>{
-      lodgingNames[inp.dataset.lodgeKey] = inp.value;
+      const entry = lodgingEntries.find(l=>l.id === Number(inp.dataset.lodgeId));
+      entry.hotelName = inp.value;
       saveLodging();
     });
   });
+}
+
+function editLodging(id){
+  editingLodgingId = id;
+  renderLodging();
+}
+
+function cancelEditLodging(){
+  editingLodgingId = null;
+  renderLodging();
+}
+
+function saveEditLodging(id){
+  const entry = lodgingEntries.find(l=>l.id === id);
+  entry.title = document.getElementById(`editLodgeTitle-${id}`).value.trim() || entry.title;
+  entry.nights = document.getElementById(`editLodgeNights-${id}`).value.trim() || entry.nights;
+  editingLodgingId = null;
+  saveLodging();
+  renderLodging();
+}
+
+function addLodging(){
+  const title = document.getElementById('newLodgeTitle').value.trim();
+  const nights = document.getElementById('newLodgeNights').value.trim();
+  if(!title) return;
+  lodgingEntries.push({ id: lodgingIdCounter++, title, nights: nights || '', hotelName:'', lat:null, lon:null });
+  saveLodging();
+  renderLodging();
+}
+
+function removeLodging(id){
+  lodgingEntries = lodgingEntries.filter(l=>l.id !== id);
+  saveLodging();
+  renderLodging();
 }
 
 // ==================================================
@@ -990,14 +1109,14 @@ function renderBudget(){
   document.getElementById('budgetTable').innerHTML = rows + `
     <div class="flex justify-between items-center p-4 bg-greekBlue text-white">
       <span class="font-semibold">סה"כ</span>
-      <span class="text-xl font-black" id="budgetTotal">₪${total.toLocaleString('he-IL')} <small class="font-normal text-sm opacity-80">ל־2 נוסעים</small></span>
+      <span class="text-xl font-black" id="budgetTotal">€${total.toLocaleString('he-IL')} <small class="font-normal text-sm opacity-80">ל־2 נוסעים</small></span>
     </div>`;
   document.querySelectorAll('.budget-input').forEach(inp=>{
     inp.addEventListener('input', ()=>{
       budgetValues[inp.dataset.key] = Number(inp.value) || 0;
       saveBudget();
       const t = budgetRows.reduce((s,r)=> s + (Number(budgetValues[r.key] ?? r.def ?? 0)), 0);
-      document.getElementById('budgetTotal').innerHTML = `₪${t.toLocaleString('he-IL')} <small class="font-normal text-sm opacity-80">ל־2 נוסעים</small>`;
+      document.getElementById('budgetTotal').innerHTML = `€${t.toLocaleString('he-IL')} <small class="font-normal text-sm opacity-80">ל־2 נוסעים</small>`;
     });
   });
 }
