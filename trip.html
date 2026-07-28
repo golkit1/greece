@@ -138,8 +138,9 @@
 
   <!-- ITINERARY -->
   <section id="view-itinerary" class="tab-view space-y-4">
+    <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1" id="dateStrip"></div>
     <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1" id="legTabs">
-      <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="all">הכל</button>
+      <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="all">לפי ימים</button>
       <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-greekBlue text-white" data-leg="zagoria">זגוריה</button>
       <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="transit">מטאורה ואתונה</button>
       <button class="leg-btn px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" data-leg="peloponnese">פלופונס</button>
@@ -368,7 +369,9 @@ const tripDays = [
     travel:{ time:"כ-2:30 שעות נסיעה (אם ישירות לאתונה)", km:"כ-150 ק\"מ" },
     quote:"החלטה בשטח: עוד מקטע הליכה במנאלון, או נסיעה ישירה חזרה לאתונה. בכל מקרה — היום מחזירים את הרכב.",
     stations:[
-      {title:"אופציה: מקטע נוסף במנאלון", desc:"אם יש כוח וזמן — המשך המסלול הרב־יומי.", place:null},
+      {title:"אופציה: מקטע 4 של המנאלון", desc:"אם יש כוח וזמן — המשך המסלול הרב־יומי.", place:null,
+        trail:{ src:"https://mapy.com/s/mufosehefu", start:"דימיצאנה", end:"מקטע 4" }},
+      {title:"חזרה לחניית הרכב בסטמניצה", desc:"אחרי מקטע 4, חוזרים לאיסוף הרכב מהחניון בסטמניצה.", place:"stemnitsa"},
       {title:"נסיעה חזרה לאתונה", desc:"ישירות מדימיצאנה, אם לא ממשיכים במנאלון.", place:"athens", duration:"כ-2:30 שעות"},
       {title:"החזרת הרכב ל-Avance", desc:"סוף השכרת הרכב — לבדוק שעות פתיחה מראש.", place:"avance"}
     ]},
@@ -819,6 +822,46 @@ function renderItinerary(leg){
       saveDayLodging();
     });
   });
+}
+
+const dateStripData = [
+  {date:4,  wd:"א", dayId:1},  {date:5,  wd:"ב", dayId:2},  {date:6,  wd:"ג", dayId:3},
+  {date:7,  wd:"ד", dayId:4},  {date:8,  wd:"ה", dayId:9},  {date:9,  wd:"ו", dayId:5},
+  {date:10, wd:"ש", dayId:5},  {date:11, wd:"א", dayId:7},  {date:12, wd:"ב", dayId:7},
+  {date:13, wd:"ג", dayId:7},  {date:14, wd:"ד", dayId:8},  {date:15, wd:"ה", dayId:10},
+  {date:16, wd:"ו", dayId:11}, {date:17, wd:"ש", dayId:11}, {date:18, wd:"א", dayId:12},
+  {date:19, wd:"ב", dayId:12}
+];
+const legColorClass = { zagoria:"bg-zagoria", transit:"bg-meteora", peloponnese:"bg-pelop" };
+
+function renderDateStrip(){
+  document.getElementById('dateStrip').innerHTML = dateStripData.map(d=>{
+    const day = tripDays.find(t=>t.id===d.dayId);
+    const dot = legColorClass[day.leg] || "bg-stone-300";
+    return `<button onclick="jumpToDate(${d.dayId})" class="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0 hover:border-greekBlue/50">
+      <span class="text-[9px] opacity-50">${d.wd}</span>
+      <span class="text-sm font-bold">${d.date}</span>
+      <span class="w-1.5 h-1.5 rounded-full ${dot}"></span>
+    </button>`;
+  }).join('');
+}
+
+function jumpToDate(dayId){
+  document.querySelectorAll('.leg-btn').forEach(b=>{
+    b.classList.remove('bg-greekBlue','text-white');
+    b.classList.add('bg-stone-100','text-slate-700');
+    b.removeAttribute('data-active');
+  });
+  const allBtn = document.querySelector('.leg-btn[data-leg="all"]');
+  allBtn.classList.add('bg-greekBlue','text-white');
+  allBtn.classList.remove('bg-stone-100','text-slate-700');
+  allBtn.dataset.active = "1";
+  collapsedDays[dayId] = false;
+  renderItinerary('all');
+  setTimeout(()=>{
+    const el = document.getElementById(`day-${dayId}`);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 50);
 }
 
 function currentActiveLeg(){
@@ -1288,6 +1331,7 @@ document.getElementById('btnDownload').addEventListener('click', ()=>{
   renderHome();
   renderFlightInfo();
   renderNotes();
+  renderDateStrip();
   renderItinerary('zagoria');
   renderLinks();
   renderDocuments();
