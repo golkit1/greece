@@ -372,8 +372,7 @@ const tripDays = [
       {title:"אופציה: מקטע 4 של המנאלון", desc:"אם יש כוח וזמן — המשך המסלול הרב־יומי.", place:null,
         trail:{ src:"https://mapy.com/s/mufosehefu", start:"דימיצאנה", end:"מקטע 4" }},
       {title:"חזרה לחניית הרכב בסטמניצה", desc:"אחרי מקטע 4, חוזרים לאיסוף הרכב מהחניון בסטמניצה.", place:"stemnitsa"},
-      {title:"נסיעה חזרה לאתונה", desc:"ישירות מדימיצאנה, אם לא ממשיכים במנאלון.", place:"athens", duration:"כ-2:30 שעות"},
-      {title:"החזרת הרכב ל-Avance", desc:"סוף השכרת הרכב — לבדוק שעות פתיחה מראש.", place:"avance"}
+      {title:"נסיעה חזרה לאתונה — ישירות להחזרת הרכב", desc:"יעד הנסיעה הוא ישר Avance, לא עצירה כללית באתונה.", place:"avance", duration:"כ-2:30 שעות"}
     ]},
   { id:11, leg:'peloponnese', date:"16–17.10 · יום שישי–שבת", route:"אתונה — בית חב\"ד", overnight:"קוקאקי, אתונה",
     quote:"סוף שבוע אחרון באתונה, ארוחות בבית חב\"ד. בלי רכב מהיום — הכל ברגל / תחבורה ציבורית.",
@@ -432,7 +431,10 @@ let packingCategories = null; // null = not yet loaded/initialized
 let packIdCounter = 1;
 let budgetValues = {};
 let dayLodging = { 8: { hotelName: "Kaza Guesthouse", url: "" } };
-let savedLinks = { athens:[], north:[], pelop:[], general:[] };
+let savedLinks = { athens:[
+  {title:"פסטיבל רבטיקו אתונה (9-11.10, Egaleo)", url:"https://athensrebetikofestival.gr/en/3rd-athens-rebetiko-festival", tag:"music"},
+  {title:"Diporto — טברנה עתיקה", url:"https://www.google.com/maps/place/Diporto/@37.9807478,23.7258382,17z", tag:"food"}
+], north:[], pelop:[], general:[] };
 let savedDocs = { flights:[], car:[], lodging:[], insurance:[], other:[] };
 let flightInfo = {
   outDate:"2026-10-04", outTime:"06:30", outArrTime:"08:45", outFlight:"GQ 721", outAirport:"TLV → ATH",
@@ -938,15 +940,37 @@ document.getElementById('legTabs').addEventListener('click', (e)=>{
 // ==================================================
 // RENDER: LINKS
 // ==================================================
+let editingLinkId = null; // {cat, idx} or null
+
+const linkTags = { food:{emoji:"🍴", label:"אוכל"}, art:{emoji:"🎨", label:"אמנות"}, music:{emoji:"🎵", label:"מוזיקה"} };
+
 function renderLinks(){
   document.getElementById('linksCategories').innerHTML = linkCategories.map(cat=>{
-    const items = (savedLinks[cat.key] || []).map((l,i)=>`
-      <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+    const items = (savedLinks[cat.key] || []).map((l,i)=>{
+      if(editingLinkId && editingLinkId.cat===cat.key && editingLinkId.idx===i){
+        return `<div class="py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0 space-y-1.5">
+          <input type="text" id="editLinkTitle" value="${l.title}" placeholder="כותרת" class="w-full px-2 py-1 text-xs rounded-lg border border-greekBlue bg-stone-50 dark:bg-slate-900">
+          <input type="url" id="editLinkUrl" value="${l.url}" placeholder="https://..." class="w-full px-2 py-1 text-xs rounded-lg border border-greekBlue bg-stone-50 dark:bg-slate-900">
+          <select id="editLinkTag" class="w-full px-2 py-1 text-xs rounded-lg border border-greekBlue bg-stone-50 dark:bg-slate-900">
+            <option value="" ${!l.tag?'selected':''}>ללא תיוג</option>
+            <option value="food" ${l.tag==='food'?'selected':''}>🍴 אוכל</option>
+            <option value="art" ${l.tag==='art'?'selected':''}>🎨 אמנות</option>
+            <option value="music" ${l.tag==='music'?'selected':''}>🎵 מוזיקה</option>
+          </select>
+          <div class="flex gap-2">
+            <button onclick="saveEditLink('${cat.key}',${i})" class="text-xs font-bold text-greekBlue hover:underline">שמירה</button>
+            <button onclick="cancelEditLink()" class="text-xs font-bold text-slate-400 hover:underline">ביטול</button>
+          </div>
+        </div>`;
+      }
+      const tagBadge = l.tag && linkTags[l.tag] ? `<span class="text-xs shrink-0" title="${linkTags[l.tag].label}">${linkTags[l.tag].emoji}</span>` : '';
+      return `<div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+        ${tagBadge}
         <a href="${l.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 text-sm font-semibold text-greekBlue dark:text-sky-400 hover:underline truncate">${l.title}</a>
-        <button onclick="removeLink('${cat.key}',${i})" class="text-xs font-bold text-rust hover:underline shrink-0 flex items-center gap-0.5" title="מחיקה">
-          <i data-lucide="x" class="w-4 h-4"></i><span>מחיקה</span>
-        </button>
-      </div>`).join('');
+        <button onclick="editLink('${cat.key}',${i})" class="text-xs font-bold text-greekBlue hover:underline shrink-0" title="עריכה">עריכה</button>
+        <button onclick="removeLink('${cat.key}',${i})" class="text-xs font-bold text-rust hover:underline shrink-0" title="מחיקה">מחיקה</button>
+      </div>`;
+    }).join('');
     const empty = (savedLinks[cat.key]||[]).length === 0 ? `<p class="text-xs opacity-50 py-1">אין עדיין קישורים.</p>` : '';
     return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
       <div class="flex items-center gap-2 mb-2">
@@ -955,8 +979,14 @@ function renderLinks(){
       </div>
       ${items}${empty}
       <div class="flex gap-2 mt-3">
-        <input type="text" placeholder="כותרת" data-cat="${cat.key}" class="link-title-input w-1/3 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="text" placeholder="כותרת" data-cat="${cat.key}" class="link-title-input w-1/4 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
         <input type="url" placeholder="https://..." data-cat="${cat.key}" class="link-url-input flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <select data-cat="${cat.key}" class="link-tag-input px-1.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+          <option value="">ללא</option>
+          <option value="food">🍴</option>
+          <option value="art">🎨</option>
+          <option value="music">🎵</option>
+        </select>
         <button onclick="addLink('${cat.key}')" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוסף</button>
       </div>
     </div>`;
@@ -964,16 +994,39 @@ function renderLinks(){
   safeIcons();
 }
 
+function editLink(cat, idx){
+  editingLinkId = {cat, idx};
+  renderLinks();
+}
+
+function cancelEditLink(){
+  editingLinkId = null;
+  renderLinks();
+}
+
+function saveEditLink(cat, idx){
+  const title = document.getElementById('editLinkTitle').value.trim();
+  const url = document.getElementById('editLinkUrl').value.trim();
+  const tag = document.getElementById('editLinkTag').value;
+  if(!url) return;
+  savedLinks[cat][idx] = { title: title || url, url, tag: tag || null };
+  editingLinkId = null;
+  saveLinks();
+  renderLinks();
+}
+
 function addLink(catKey){
   const titleInp = document.querySelector(`.link-title-input[data-cat="${catKey}"]`);
   const urlInp = document.querySelector(`.link-url-input[data-cat="${catKey}"]`);
+  const tagInp = document.querySelector(`.link-tag-input[data-cat="${catKey}"]`);
   let title = titleInp.value.trim();
   let url = urlInp.value.trim();
+  const tag = tagInp.value;
   if(!url) return;
   if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
   if(!title) title = url.replace(/^https?:\/\//,'').split('/')[0];
   if(!savedLinks[catKey]) savedLinks[catKey] = [];
-  savedLinks[catKey].push({title, url});
+  savedLinks[catKey].push({title, url, tag: tag || null});
   saveLinks();
   renderLinks();
 }
