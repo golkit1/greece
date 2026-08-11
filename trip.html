@@ -493,6 +493,7 @@ let budgetRows = null;
 let budgetIdCounter = 1;
 let editingBudgetKey = null;
 let dayLodging = { 8: { hotelName: "Kaza Guesthouse", url: "" } };
+let lodgingFormOpen = {};
 let savedLinks = { athens:[
   {title:"פסטיבל רבטיקו אתונה (9-11.10, Egaleo)", url:"https://athensrebetikofestival.gr/en/3rd-athens-rebetiko-festival", tag:"music"},
   {title:"Diporto — טברנה עתיקה", url:"https://www.google.com/maps/place/Diporto/@37.9807478,23.7258382,17z", tag:"food"}
@@ -958,15 +959,22 @@ function dayCard(day){
   let lodgingHtml = '';
   if(day.overnight){
     const lg = dayLodging[day.id] || { hotelName:'', url:'' };
-    lodgingHtml = `<div class="mt-3 rounded-xl border border-sky-200 dark:border-sky-900/40 bg-sky-50 dark:bg-sky-950/10 p-3">
-      <div class="flex items-center gap-1.5 text-xs font-bold text-greekBlue mb-2"><i data-lucide="bed" class="w-3.5 h-3.5"></i> לינה: ${day.overnight}</div>
-      <div class="flex gap-2">
-        <input type="text" placeholder="שם המלון/הצימר..." value="${lg.hotelName}" data-lodge-day="${day.id}" data-lodge-field="hotelName"
-          class="day-lodge-input flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-900">
-        <input type="url" placeholder="קישור להזמנה..." value="${lg.url}" data-lodge-day="${day.id}" data-lodge-field="url"
-          class="day-lodge-input flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-900">
+    const lodgeOpen = !!lodgingFormOpen[day.id];
+    const preview = lg.hotelName ? ` — ${lg.hotelName}` : '';
+    lodgingHtml = `<div class="mt-3 rounded-xl border border-sky-200 dark:border-sky-900/40 bg-sky-50 dark:bg-sky-950/10 overflow-hidden">
+      <button onclick="event.stopPropagation(); toggleLodgingForm(${day.id})" class="w-full flex items-center justify-between px-3 py-2 text-right">
+        <span class="flex items-center gap-1.5 text-xs font-bold text-greekBlue"><i data-lucide="bed" class="w-3.5 h-3.5"></i> לינה: ${day.overnight}${preview}</span>
+        <i data-lucide="chevron-down" class="w-4 h-4 text-greekBlue transition-transform ${lodgeOpen ? 'rotate-180' : ''}"></i>
+      </button>
+      <div class="${lodgeOpen ? '' : 'hidden'} px-3 pb-3">
+        <div class="flex gap-2">
+          <input type="text" placeholder="שם המלון/הצימר..." value="${lg.hotelName}" data-lodge-day="${day.id}" data-lodge-field="hotelName"
+            class="day-lodge-input flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-900">
+          <input type="url" placeholder="קישור להזמנה..." value="${lg.url}" data-lodge-day="${day.id}" data-lodge-field="url"
+            class="day-lodge-input flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-900">
+        </div>
+        ${lg.url ? `<a href="${lg.url}" target="_blank" rel="noopener" class="inline-block mt-2 text-xs font-bold text-greekBlue hover:underline">פתיחת ההזמנה ↗</a>` : ''}
       </div>
-      ${lg.url ? `<a href="${lg.url}" target="_blank" rel="noopener" class="inline-block mt-2 text-xs font-bold text-greekBlue hover:underline">פתיחת ההזמנה ↗</a>` : ''}
     </div>`;
   }
 
@@ -1121,6 +1129,11 @@ function jumpToDate(dayId){
     const el = document.getElementById(`day-${dayId}`);
     if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
   }, 50);
+}
+
+function toggleLodgingForm(dayId){
+  lodgingFormOpen[dayId] = !lodgingFormOpen[dayId];
+  renderItinerary(currentActiveLeg());
 }
 
 function currentActiveLeg(){
