@@ -435,7 +435,7 @@ const tripDays = [
     ]}
 ];
 
-const linkCategories = [
+const DEFAULT_LINK_CATEGORIES = [
   { key:"athens", label:"אתונה", color:"athensC" },
   { key:"north",  label:"צפון יוון / זגוריה", color:"zagoria" },
   { key:"pelop",  label:"פלופונס / מאני", color:"pelop" },
@@ -525,6 +525,11 @@ async function loadState(){
   try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-docs'); if(r) savedDocs = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('doc-category-order'); if(r) docCategoryOrder = JSON.parse(r.value); }catch(e){}
+  try{
+    const r = await window.storage.get('link-categories');
+    if(r){ const p = JSON.parse(r.value); linkCategories = p.categories; linkCatIdCounter = p.idCounter || 1; }
+  }catch(e){}
+  if(!linkCategories) linkCategories = DEFAULT_LINK_CATEGORIES.map(c=>({...c}));
   try{ const r = await window.storage.get('flight-info'); if(r) flightInfo = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
@@ -1122,6 +1127,8 @@ document.getElementById('legTabs').addEventListener('click', (e)=>{
 // RENDER: LINKS
 // ==================================================
 let editingLinkId = null; // {cat, idx} or null
+let linkCategories = null;
+let linkCatIdCounter = 1;
 
 const linkTags = { food:{emoji:"🍴", label:"אוכל"}, art:{emoji:"🎨", label:"אמנות"}, music:{emoji:"🎵", label:"מוזיקה"} };
 
@@ -1145,7 +1152,8 @@ function renderLinks(){
         </div>`;
       }
       const tagBadge = l.tag && linkTags[l.tag] ? `<span class="text-xs shrink-0" title="${linkTags[l.tag].label}">${linkTags[l.tag].emoji}</span>` : '';
-      return `<div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+      return `<div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0 link-item-row" draggable="true" data-link-cat="${cat.key}" data-link-idx="${i}">
+        <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
         ${tagBadge}
         <a href="${l.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 text-sm font-semibold text-greekBlue dark:text-sky-400 hover:underline truncate">${l.title}</a>
         <button onclick="editLink('${cat.key}',${i})" class="text-xs font-bold text-greekBlue hover:underline shrink-0" title="עריכה">עריכה</button>
@@ -1153,10 +1161,14 @@ function renderLinks(){
       </div>`;
     }).join('');
     const empty = (savedLinks[cat.key]||[]).length === 0 ? `<p class="text-xs opacity-50 py-1">אין עדיין קישורים.</p>` : '';
-    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-${cat.color}"></span>
-        <h3 class="font-bold text-sm">${cat.label}</h3>
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4 link-cat-card" draggable="true" data-link-cat-key="${cat.key}">
+      <div class="flex items-center justify-between gap-2 mb-2">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-${cat.color} shrink-0"></span>
+          <h3 class="font-bold text-sm cursor-pointer hover:underline truncate" onclick="renameLinkCategoryPrompt('${cat.key}')" title="לחצו לשינוי שם">${cat.label} ✏️</h3>
+        </div>
+        <button onclick="removeLinkCategory('${cat.key}')" class="text-[11px] font-bold text-rust hover:underline shrink-0">מחיקת רובריקה</button>
       </div>
       ${items}${empty}
       <div class="flex gap-2 mt-3">
@@ -1171,8 +1183,95 @@ function renderLinks(){
         <button onclick="addLink('${cat.key}')" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוסף</button>
       </div>
     </div>`;
-  }).join('');
+  }).join('') + `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-dashed border-stone-300 dark:border-slate-600 p-4">
+    <div class="flex gap-2">
+      <input type="text" id="newLinkCatName" placeholder="שם רובריקה חדשה..." class="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+      <button onclick="addLinkCategory()" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">רובריקה חדשה</button>
+    </div>
+  </div>`;
   safeIcons();
+  wireLinksDragAndDrop();
+}
+
+function wireLinksDragAndDrop(){
+  const grid = document.getElementById('linksCategories');
+
+  let draggedCatKey = null;
+  grid.querySelectorAll('.link-cat-card').forEach(card=>{
+    card.addEventListener('dragstart', (e)=>{
+      if(e.target.closest('.link-item-row')){ e.stopPropagation(); return; }
+      draggedCatKey = card.dataset.linkCatKey;
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragover', (e)=>{ e.preventDefault(); });
+    card.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      if(!draggedCatKey || draggedCatKey === card.dataset.linkCatKey) return;
+      const fromIdx = linkCategories.findIndex(c=>c.key===draggedCatKey);
+      const toIdx = linkCategories.findIndex(c=>c.key===card.dataset.linkCatKey);
+      const [moved] = linkCategories.splice(fromIdx,1);
+      linkCategories.splice(toIdx,0,moved);
+      draggedCatKey = null;
+      saveLinkCategories();
+      renderLinks();
+    });
+  });
+
+  let draggedItem = null;
+  grid.querySelectorAll('.link-item-row').forEach(row=>{
+    row.addEventListener('dragstart', (e)=>{
+      e.stopPropagation();
+      draggedItem = { cat: row.dataset.linkCat, idx: Number(row.dataset.linkIdx) };
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragover', (e)=>{ e.preventDefault(); e.stopPropagation(); });
+    row.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(!draggedItem) return;
+      const targetCat = row.dataset.linkCat;
+      const targetIdx = Number(row.dataset.linkIdx);
+      if(draggedItem.cat !== targetCat){ draggedItem = null; return; }
+      const arr = savedLinks[targetCat];
+      const [moved] = arr.splice(draggedItem.idx, 1);
+      arr.splice(targetIdx, 0, moved);
+      draggedItem = null;
+      saveLinks();
+      renderLinks();
+    });
+  });
+}
+
+function renameLinkCategoryPrompt(catKey){
+  const cat = linkCategories.find(c=>c.key===catKey);
+  const newName = window.prompt('שם חדש לרובריקה:', cat.label);
+  if(newName && newName.trim()){
+    cat.label = newName.trim();
+    saveLinkCategories();
+    renderLinks();
+  }
+}
+
+function addLinkCategory(){
+  const inp = document.getElementById('newLinkCatName');
+  const name = inp.value.trim();
+  if(!name) return;
+  const palette = ['zagoria','meteora','athensC','pelop','rust','greekBlue'];
+  const color = palette[linkCategories.length % palette.length];
+  const key = 'cat' + linkCatIdCounter++;
+  linkCategories.push({ key, label:name, color });
+  savedLinks[key] = [];
+  saveLinkCategories();
+  saveLinks();
+  renderLinks();
+}
+
+function removeLinkCategory(catKey){
+  linkCategories = linkCategories.filter(c=>c.key!==catKey);
+  delete savedLinks[catKey];
+  saveLinkCategories();
+  saveLinks();
+  renderLinks();
 }
 
 function editLink(cat, idx){
@@ -1308,6 +1407,7 @@ function wireDocDragAndDrop(){
 }
 
 async function saveDocCategoryOrder(){ try{ await window.storage.set('doc-category-order', JSON.stringify(docCategoryOrder)); }catch(e){} }
+async function saveLinkCategories(){ try{ await window.storage.set('link-categories', JSON.stringify({categories: linkCategories, idCounter: linkCatIdCounter})); }catch(e){} }
 
 function addDoc(catKey){
   const titleInp = document.querySelector(`.doc-title-input[data-doccat="${catKey}"]`);
