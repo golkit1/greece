@@ -29,6 +29,8 @@
   }
 </script>
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -209,18 +211,48 @@
 </div>
 <script>
 // ==================================================
-// STORAGE POLYFILL
-// window.storage is a Claude.ai-only API. On a real site (GitHub Pages etc.)
-// it doesn't exist, so we fall back to localStorage with the same interface.
+// STORAGE: Firebase Realtime Database (cross-device sync)
+// window.storage is a Claude.ai-only API and doesn't exist on a real site,
+// so here we implement the same get/set interface backed by Firebase,
+// with localStorage as an offline fallback/cache.
 // ==================================================
 if (!window.storage) {
+  const firebaseConfig = {
+    apiKey: "AIzaSyC1vzOodP-jWxu7mWYa5_LvUgZDFLzBJig",
+    authDomain: "greece-af497.firebaseapp.com",
+    databaseURL: "https://greece-af497-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "greece-af497",
+    storageBucket: "greece-af497.firebasestorage.app",
+    messagingSenderId: "2459759414",
+    appId: "1:2459759414:web:aa52d17d338c74b8c13997"
+  };
+
+  let fbDb = null;
+  try{
+    firebase.initializeApp(firebaseConfig);
+    fbDb = firebase.database();
+  }catch(e){ console.warn('Firebase init failed, falling back to local-only storage', e); }
+
   window.storage = {
     async get(key){
-      const v = localStorage.getItem('trip-' + key);
-      return v === null ? null : { key, value: v };
+      if(fbDb){
+        try{
+          const snap = await fbDb.ref('trip/' + key).once('value');
+          const v = snap.val();
+          if(v !== null && v !== undefined){
+            localStorage.setItem('trip-' + key, v); // keep local cache fresh
+            return { key, value: v };
+          }
+        }catch(e){ console.warn('Firebase read failed for', key, e); }
+      }
+      const local = localStorage.getItem('trip-' + key);
+      return local === null ? null : { key, value: local };
     },
     async set(key, value){
       localStorage.setItem('trip-' + key, value);
+      if(fbDb){
+        try{ await fbDb.ref('trip/' + key).set(value); }catch(e){ console.warn('Firebase write failed for', key, e); }
+      }
       return { key, value };
     }
   };
