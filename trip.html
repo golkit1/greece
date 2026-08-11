@@ -93,29 +93,7 @@
 
 <!-- TOP NAV -->
 <nav class="shrink-0 bg-white dark:bg-slate-800 border-b border-stone-200 dark:border-slate-700 z-40">
-  <div class="flex overflow-x-auto no-scrollbar text-[10px] font-semibold">
-    <button onclick="switchTab('home')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-home">
-      <i data-lucide="home" class="w-4 h-4"></i><span>בית</span>
-    </button>
-    <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-itinerary">
-      <i data-lucide="route" class="w-4 h-4"></i><span>מסלול</span>
-    </button>
-    <button onclick="switchTab('links')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-links">
-      <i data-lucide="link" class="w-4 h-4"></i><span>קישורים</span>
-    </button>
-    <button onclick="switchTab('documents')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-documents">
-      <i data-lucide="file-text" class="w-4 h-4"></i><span>מסמכים</span>
-    </button>
-    <button onclick="switchTab('notes')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-notes">
-      <i data-lucide="sticky-note" class="w-4 h-4"></i><span>הערות</span>
-    </button>
-    <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-budget">
-      <i data-lucide="wallet" class="w-4 h-4"></i><span>תקציב</span>
-    </button>
-    <button onclick="switchTab('packing')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-packing">
-      <i data-lucide="backpack" class="w-4 h-4"></i><span>ציוד</span>
-    </button>
-  </div>
+  <div class="flex overflow-x-auto no-scrollbar text-[10px] font-semibold" id="topNav"></div>
 </nav>
 
 <!-- MAIN -->
@@ -134,6 +112,17 @@
         <span id="flightChevron" class="transition-transform text-slate-400"><i data-lucide="chevron-down" class="w-5 h-5"></i></span>
       </button>
       <div id="flightInfoForm" class="hidden space-y-3 p-4 pt-0"></div>
+    </div>
+
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 overflow-hidden">
+      <button onclick="toggleTabsManageCard()" id="tabsManageToggleBtn" class="w-full flex items-center justify-between p-4 text-right">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layout-grid" class="w-5 h-5 text-greekBlue"></i>
+          <h2 class="font-bold text-sm">ניהול לשוניות</h2>
+        </div>
+        <span id="tabsManageChevron" class="transition-transform text-slate-400"><i data-lucide="chevron-down" class="w-5 h-5"></i></span>
+      </button>
+      <div id="tabsManageBody" class="hidden p-4 pt-0"></div>
     </div>
 
   </section>
@@ -343,6 +332,16 @@ const places = {
   tsepelovo: {lat:39.9319, lon:20.7975, name:"צפלובו", text:"כפר בזגוריה, נקודת ירידה ממקלט אסטרקה."}
 };
 
+const DEFAULT_NAV_TABS = [
+  { id:"home", icon:"home", label:"בית" },
+  { id:"itinerary", icon:"route", label:"מסלול" },
+  { id:"links", icon:"link", label:"קישורים" },
+  { id:"documents", icon:"file-text", label:"מסמכים" },
+  { id:"notes", icon:"sticky-note", label:"הערות" },
+  { id:"budget", icon:"wallet", label:"תקציב" },
+  { id:"packing", icon:"backpack", label:"ציוד" }
+];
+
 const tripDays = [
   { id:1, leg:'zagoria', date:"4.10 · יום ראשון", route:"נחיתה ← נאפפקטוס ← יואנינה", overnight:"יואנינה",
     travel:{ time:"כ-4:45 שעות", km:"כ-360 ק\"מ" },
@@ -495,6 +494,7 @@ let flightInfo = {
 };
 let tripNotes = [];
 let darkMode = false;
+let navTabs = null;
 
 async function loadState(){
   try{ const r = await window.storage.get('visited-stations'); if(r) visited = JSON.parse(r.value); }catch(e){}
@@ -533,6 +533,8 @@ async function loadState(){
   try{ const r = await window.storage.get('flight-info'); if(r) flightInfo = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
+  try{ const r = await window.storage.get('nav-tabs'); if(r) navTabs = JSON.parse(r.value); }catch(e){}
+  if(!navTabs) navTabs = DEFAULT_NAV_TABS.map(t=>({...t}));
 }
 async function saveDayLodging(){ try{ await window.storage.set('day-lodging', JSON.stringify(dayLodging)); }catch(e){} }
 async function saveLinks(){ try{ await window.storage.set('saved-links', JSON.stringify(savedLinks)); }catch(e){} }
@@ -548,10 +550,63 @@ async function saveDayNotes(){ try{ await window.storage.set('day-notes', JSON.s
 async function savePack(){ try{ await window.storage.set('packing-items', JSON.stringify({categories: packingCategories, idCounter: packIdCounter})); }catch(e){} }
 async function saveBudget(){ try{ await window.storage.set('budget-values', JSON.stringify(budgetValues)); }catch(e){} }
 async function saveDark(){ try{ await window.storage.set('dark-mode', String(darkMode)); }catch(e){} }
+async function saveNavTabs(){ try{ await window.storage.set('nav-tabs', JSON.stringify(navTabs)); }catch(e){} }
 
 // ==================================================
 // RENDER: HOME
 // ==================================================
+function renderTopNav(){
+  document.getElementById('topNav').innerHTML = navTabs.map(t=>
+    `<button onclick="switchTab('${t.id}')" class="nav-btn flex flex-col items-center gap-1 py-2.5 px-3 shrink-0 text-slate-400 hover:text-greekBlue" id="btn-${t.id}">
+      <i data-lucide="${t.icon}" class="w-4 h-4"></i><span>${t.label}</span>
+    </button>`
+  ).join('');
+  safeIcons();
+}
+
+function toggleTabsManageCard(){
+  const body = document.getElementById('tabsManageBody');
+  const chevron = document.getElementById('tabsManageChevron');
+  const nowHidden = body.classList.toggle('hidden');
+  if(chevron) chevron.classList.toggle('rotate-180', !nowHidden);
+  if(!nowHidden) renderTabsManage();
+}
+
+function renderTabsManage(){
+  document.getElementById('tabsManageBody').innerHTML = navTabs.map((t,i)=>`
+    <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+      <span class="flex flex-col shrink-0">
+        <button onclick="moveNavTab(${i},-1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז שמאלה">▲</button>
+        <button onclick="moveNavTab(${i},1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז ימינה">▼</button>
+      </span>
+      <i data-lucide="${t.icon}" class="w-4 h-4 text-greekBlue shrink-0"></i>
+      <span class="flex-1 text-sm font-semibold">${t.label}</span>
+      <button onclick="renameNavTabPrompt(${i})" class="text-xs font-bold text-greekBlue hover:underline shrink-0">שינוי שם</button>
+    </div>`
+  ).join('');
+  safeIcons();
+}
+
+function moveNavTab(idx, dir){
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= navTabs.length) return;
+  [navTabs[idx], navTabs[newIdx]] = [navTabs[newIdx], navTabs[idx]];
+  saveNavTabs();
+  renderTopNav();
+  renderTabsManage();
+}
+
+function renameNavTabPrompt(idx){
+  const t = navTabs[idx];
+  const newName = window.prompt('שם חדש ללשונית:', t.label);
+  if(newName && newName.trim()){
+    t.label = newName.trim();
+    saveNavTabs();
+    renderTopNav();
+    renderTabsManage();
+  }
+}
+
 function toggleFlightCard(){
   const body = document.getElementById('flightInfoForm');
   const chevron = document.getElementById('flightChevron');
@@ -1606,6 +1661,7 @@ document.getElementById('btnDownload').addEventListener('click', ()=>{
   document.documentElement.classList.toggle('dark', darkMode);
   if(darkMode) document.getElementById('btnDark').innerHTML = '☀️';
   document.querySelector('.leg-btn[data-leg="zagoria"]').dataset.active = "1";
+  renderTopNav();
   renderHome();
   renderFlightInfo();
   renderNotes();
