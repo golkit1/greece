@@ -1152,8 +1152,11 @@ function renderLinks(){
         </div>`;
       }
       const tagBadge = l.tag && linkTags[l.tag] ? `<span class="text-xs shrink-0" title="${linkTags[l.tag].label}">${linkTags[l.tag].emoji}</span>` : '';
-      return `<div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0 link-item-row" draggable="true" data-link-cat="${cat.key}" data-link-idx="${i}">
-        <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
+      return `<div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+        <span class="flex flex-col shrink-0">
+          <button onclick="moveLinkItem('${cat.key}',${i},-1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למעלה">▲</button>
+          <button onclick="moveLinkItem('${cat.key}',${i},1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למטה">▼</button>
+        </span>
         ${tagBadge}
         <a href="${l.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 text-sm font-semibold text-greekBlue dark:text-sky-400 hover:underline truncate">${l.title}</a>
         <button onclick="editLink('${cat.key}',${i})" class="text-xs font-bold text-greekBlue hover:underline shrink-0" title="עריכה">עריכה</button>
@@ -1161,10 +1164,13 @@ function renderLinks(){
       </div>`;
     }).join('');
     const empty = (savedLinks[cat.key]||[]).length === 0 ? `<p class="text-xs opacity-50 py-1">אין עדיין קישורים.</p>` : '';
-    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4 link-cat-card" draggable="true" data-link-cat-key="${cat.key}">
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
       <div class="flex items-center justify-between gap-2 mb-2">
         <div class="flex items-center gap-2 flex-1 min-w-0">
-          <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
+          <span class="flex flex-col shrink-0">
+            <button onclick="moveLinkCategory('${cat.key}',-1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למעלה">▲</button>
+            <button onclick="moveLinkCategory('${cat.key}',1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למטה">▼</button>
+          </span>
           <span class="w-2.5 h-2.5 rounded-full bg-${cat.color} shrink-0"></span>
           <h3 class="font-bold text-sm cursor-pointer hover:underline truncate" onclick="renameLinkCategoryPrompt('${cat.key}')" title="לחצו לשינוי שם">${cat.label} ✏️</h3>
         </div>
@@ -1190,57 +1196,26 @@ function renderLinks(){
     </div>
   </div>`;
   safeIcons();
-  wireLinksDragAndDrop();
 }
 
-function wireLinksDragAndDrop(){
-  const grid = document.getElementById('linksCategories');
-
-  let draggedCatKey = null;
-  grid.querySelectorAll('.link-cat-card').forEach(card=>{
-    card.addEventListener('dragstart', (e)=>{
-      if(e.target.closest('.link-item-row')){ e.stopPropagation(); return; }
-      draggedCatKey = card.dataset.linkCatKey;
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    card.addEventListener('dragover', (e)=>{ e.preventDefault(); });
-    card.addEventListener('drop', (e)=>{
-      e.preventDefault();
-      if(!draggedCatKey || draggedCatKey === card.dataset.linkCatKey) return;
-      const fromIdx = linkCategories.findIndex(c=>c.key===draggedCatKey);
-      const toIdx = linkCategories.findIndex(c=>c.key===card.dataset.linkCatKey);
-      const [moved] = linkCategories.splice(fromIdx,1);
-      linkCategories.splice(toIdx,0,moved);
-      draggedCatKey = null;
-      saveLinkCategories();
-      renderLinks();
-    });
-  });
-
-  let draggedItem = null;
-  grid.querySelectorAll('.link-item-row').forEach(row=>{
-    row.addEventListener('dragstart', (e)=>{
-      e.stopPropagation();
-      draggedItem = { cat: row.dataset.linkCat, idx: Number(row.dataset.linkIdx) };
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    row.addEventListener('dragover', (e)=>{ e.preventDefault(); e.stopPropagation(); });
-    row.addEventListener('drop', (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      if(!draggedItem) return;
-      const targetCat = row.dataset.linkCat;
-      const targetIdx = Number(row.dataset.linkIdx);
-      if(draggedItem.cat !== targetCat){ draggedItem = null; return; }
-      const arr = savedLinks[targetCat];
-      const [moved] = arr.splice(draggedItem.idx, 1);
-      arr.splice(targetIdx, 0, moved);
-      draggedItem = null;
-      saveLinks();
-      renderLinks();
-    });
-  });
+function moveLinkCategory(catKey, dir){
+  const idx = linkCategories.findIndex(c=>c.key===catKey);
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= linkCategories.length) return;
+  [linkCategories[idx], linkCategories[newIdx]] = [linkCategories[newIdx], linkCategories[idx]];
+  saveLinkCategories();
+  renderLinks();
 }
+
+function moveLinkItem(catKey, idx, dir){
+  const arr = savedLinks[catKey];
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= arr.length) return;
+  [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+  saveLinks();
+  renderLinks();
+}
+
 
 function renameLinkCategoryPrompt(catKey){
   const cat = linkCategories.find(c=>c.key===catKey);
@@ -1328,17 +1303,21 @@ function renderDocuments(){
 
   document.getElementById('documentsCategories').innerHTML = orderedCats.map(cat=>{
     const items = (savedDocs[cat.key] || []).map((l,i)=>`
-      <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0 doc-item-row"
-        draggable="true" data-doc-cat="${cat.key}" data-doc-idx="${i}">
-        <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
+      <div class="flex items-center gap-2 py-1.5 border-b border-stone-100 dark:border-slate-700 last:border-0">
+        <span class="flex flex-col shrink-0">
+          <button onclick="moveDocItem('${cat.key}',${i},-1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למעלה">▲</button>
+          <button onclick="moveDocItem('${cat.key}',${i},1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למטה">▼</button>
+        </span>
         <a href="${l.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 text-sm font-semibold text-greekBlue dark:text-sky-400 hover:underline truncate">${l.title}</a>
         <button onclick="removeDoc('${cat.key}',${i})" class="text-xs font-bold text-rust hover:underline shrink-0">מחיקה</button>
       </div>`).join('');
     const empty = (savedDocs[cat.key]||[]).length === 0 ? `<p class="text-xs opacity-50 py-1">אין עדיין מסמכים.</p>` : '';
-    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4 doc-cat-card"
-      draggable="true" data-doc-cat-key="${cat.key}">
+    return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 p-4">
       <div class="flex items-center gap-2 mb-2">
-        <span class="cursor-grab text-slate-300 shrink-0" title="גררו לשינוי סדר">⠿</span>
+        <span class="flex flex-col shrink-0">
+          <button onclick="moveDocCategory('${cat.key}',-1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למעלה">▲</button>
+          <button onclick="moveDocCategory('${cat.key}',1)" class="text-slate-400 hover:text-greekBlue leading-none text-xs" title="הזז למטה">▼</button>
+        </span>
         <span class="w-2.5 h-2.5 rounded-full bg-${cat.color}"></span>
         <h3 class="font-bold text-sm">${cat.label}</h3>
       </div>
@@ -1351,59 +1330,24 @@ function renderDocuments(){
     </div>`;
   }).join('');
   safeIcons();
-  wireDocDragAndDrop();
 }
 
-function wireDocDragAndDrop(){
-  const grid = document.getElementById('documentsCategories');
+function moveDocCategory(catKey, dir){
+  const idx = docCategoryOrder.indexOf(catKey);
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= docCategoryOrder.length) return;
+  [docCategoryOrder[idx], docCategoryOrder[newIdx]] = [docCategoryOrder[newIdx], docCategoryOrder[idx]];
+  saveDocCategoryOrder();
+  renderDocuments();
+}
 
-  // category cards reorder
-  let draggedCatKey = null;
-  grid.querySelectorAll('.doc-cat-card').forEach(card=>{
-    card.addEventListener('dragstart', (e)=>{
-      // don't hijack drags that started on an item row (handled separately)
-      if(e.target.closest('.doc-item-row')){ e.stopPropagation(); return; }
-      draggedCatKey = card.dataset.docCatKey;
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    card.addEventListener('dragover', (e)=>{ e.preventDefault(); });
-    card.addEventListener('drop', (e)=>{
-      e.preventDefault();
-      if(!draggedCatKey || draggedCatKey === card.dataset.docCatKey) return;
-      const fromIdx = docCategoryOrder.indexOf(draggedCatKey);
-      const toIdx = docCategoryOrder.indexOf(card.dataset.docCatKey);
-      docCategoryOrder.splice(fromIdx,1);
-      docCategoryOrder.splice(toIdx,0,draggedCatKey);
-      draggedCatKey = null;
-      saveDocCategoryOrder();
-      renderDocuments();
-    });
-  });
-
-  // item rows reorder (within same category)
-  let draggedItem = null;
-  grid.querySelectorAll('.doc-item-row').forEach(row=>{
-    row.addEventListener('dragstart', (e)=>{
-      e.stopPropagation();
-      draggedItem = { cat: row.dataset.docCat, idx: Number(row.dataset.docIdx) };
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    row.addEventListener('dragover', (e)=>{ e.preventDefault(); e.stopPropagation(); });
-    row.addEventListener('drop', (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      if(!draggedItem) return;
-      const targetCat = row.dataset.docCat;
-      const targetIdx = Number(row.dataset.docIdx);
-      if(draggedItem.cat !== targetCat) { draggedItem = null; return; }
-      const arr = savedDocs[targetCat];
-      const [moved] = arr.splice(draggedItem.idx, 1);
-      arr.splice(targetIdx, 0, moved);
-      draggedItem = null;
-      saveDocs();
-      renderDocuments();
-    });
-  });
+function moveDocItem(catKey, idx, dir){
+  const arr = savedDocs[catKey];
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= arr.length) return;
+  [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+  saveDocs();
+  renderDocuments();
 }
 
 async function saveDocCategoryOrder(){ try{ await window.storage.set('doc-category-order', JSON.stringify(docCategoryOrder)); }catch(e){} }
