@@ -209,6 +209,24 @@
 </div>
 <script>
 // ==================================================
+// STORAGE POLYFILL
+// window.storage is a Claude.ai-only API. On a real site (GitHub Pages etc.)
+// it doesn't exist, so we fall back to localStorage with the same interface.
+// ==================================================
+if (!window.storage) {
+  window.storage = {
+    async get(key){
+      const v = localStorage.getItem('trip-' + key);
+      return v === null ? null : { key, value: v };
+    },
+    async set(key, value){
+      localStorage.setItem('trip-' + key, value);
+      return { key, value };
+    }
+  };
+}
+
+// ==================================================
 // DATA
 // ==================================================
 // ==================================================
@@ -409,7 +427,7 @@ const DEFAULT_PACKING = [
 const budgetRows = [
   {key:"flights", label:"טיסות", note:"הלוך ושוב, לשני נוסעים"},
   {key:"car", label:"רכב שכור", note:"16 ימים, הילוכים ידניים"},
-  {key:"fuel", label:"דלק וכבישי אגרה", note:"מסלול מלא (TollGuru: אגרות €76.65 + דלק €279.91)", def:357},
+  {key:"fuel", label:"דלק וכבישי אגרה", note:"חלקי בלבד! רק אתונה←יואנינה (TollGuru: €47.25 אגרות + €74.16 דלק, 459 ק\"מ). חסר: שאר המסלול.", def:121},
   {key:"stay", label:"לינה", note:"כולל מקלט אסטרקה"},
   {key:"food", label:"אוכל", note:"ל־16 יום"},
   {key:"insurance", label:"ביטוח נסיעות", note:"כולל כיסוי טרקים"},
