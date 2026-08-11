@@ -172,6 +172,13 @@
     <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">תקציב הטיול</h2>
     <p class="text-sm opacity-70">הסכומים נשמרים אוטומטית (ביורו).</p>
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-stone-200 dark:border-slate-700 overflow-hidden" id="budgetTable"></div>
+    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-dashed border-stone-300 dark:border-slate-600 p-4">
+      <div class="space-y-2">
+        <input type="text" id="newBudgetLabel" placeholder="שם רובריקה חדשה..." class="w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <input type="text" id="newBudgetNote" placeholder="הערה (אופציונלי)..." class="w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        <button onclick="addBudgetRow()" class="w-full bg-greekBlue text-white py-2 rounded-lg text-sm font-bold">הוספת רובריקה</button>
+      </div>
+    </div>
   </section>
 
   <!-- LINKS -->
@@ -455,7 +462,7 @@ const DEFAULT_PACKING = [
   { cat:"כללי", key:"gen", items:["מטען נייד + כבלים","קרם הגנה","ערכת עזרה ראשונה קטנה","בגד ים (לחוף במאני)","בקבוק מים לשימוש חוזר"] }
 ];
 
-const budgetRows = [
+const DEFAULT_BUDGET_ROWS = [
   {key:"flights", label:"טיסות", note:"הלוך ושוב, לשני נוסעים"},
   {key:"car", label:"רכב שכור", note:"16 ימים, הילוכים ידניים"},
   {key:"fuel", label:"דלק וכבישי אגרה", note:"חלקי בלבד! רק אתונה←יואנינה (TollGuru: €47.25 אגרות + €74.16 דלק, 459 ק\"מ). חסר: שאר המסלול.", def:121},
@@ -482,6 +489,9 @@ let stationAddFormOpen = {};
 let packingCategories = null; // null = not yet loaded/initialized
 let packIdCounter = 1;
 let budgetValues = {};
+let budgetRows = null;
+let budgetIdCounter = 1;
+let editingBudgetKey = null;
 let dayLodging = { 8: { hotelName: "Kaza Guesthouse", url: "" } };
 let savedLinks = { athens:[
   {title:"פסטיבל רבטיקו אתונה (9-11.10, Egaleo)", url:"https://athensrebetikofestival.gr/en/3rd-athens-rebetiko-festival", tag:"music"},
@@ -521,6 +531,11 @@ async function loadState(){
     }));
   }
   try{ const r = await window.storage.get('budget-values'); if(r) budgetValues = JSON.parse(r.value); }catch(e){}
+  try{
+    const r = await window.storage.get('budget-rows');
+    if(r){ const p = JSON.parse(r.value); budgetRows = p.rows; budgetIdCounter = p.idCounter || 1; }
+  }catch(e){}
+  if(!budgetRows) budgetRows = DEFAULT_BUDGET_ROWS.map(r=>({...r}));
   try{ const r = await window.storage.get('day-lodging'); if(r) dayLodging = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-links'); if(r) savedLinks = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('saved-docs'); if(r) savedDocs = JSON.parse(r.value); }catch(e){}
@@ -549,6 +564,7 @@ async function saveCustomStations(){ try{ await window.storage.set('custom-stati
 async function saveDayNotes(){ try{ await window.storage.set('day-notes', JSON.stringify(dayNotes)); }catch(e){} }
 async function savePack(){ try{ await window.storage.set('packing-items', JSON.stringify({categories: packingCategories, idCounter: packIdCounter})); }catch(e){} }
 async function saveBudget(){ try{ await window.storage.set('budget-values', JSON.stringify(budgetValues)); }catch(e){} }
+async function saveBudgetRows(){ try{ await window.storage.set('budget-rows', JSON.stringify({rows: budgetRows, idCounter: budgetIdCounter})); }catch(e){} }
 async function saveDark(){ try{ await window.storage.set('dark-mode', String(darkMode)); }catch(e){} }
 async function saveNavTabs(){ try{ await window.storage.set('nav-tabs', JSON.stringify(navTabs)); }catch(e){} }
 
@@ -1433,11 +1449,25 @@ function removeDoc(catKey, idx){
 // ==================================================
 function renderBudget(){
   const rows = budgetRows.map(r=>{
+    if(editingBudgetKey === r.key){
+      return `<div class="p-4 border-b border-stone-100 dark:border-slate-700 last:border-0 space-y-1.5 bg-stone-50 dark:bg-slate-900">
+        <input type="text" id="editBudgetLabel" value="${r.label}" placeholder="שם רובריקה" class="w-full px-2 py-1.5 text-sm rounded-lg border border-greekBlue bg-white dark:bg-slate-800">
+        <input type="text" id="editBudgetNote" value="${r.note}" placeholder="הערה" class="w-full px-2 py-1.5 text-sm rounded-lg border border-greekBlue bg-white dark:bg-slate-800">
+        <div class="flex gap-2">
+          <button onclick="saveEditBudgetRow('${r.key}')" class="flex-1 bg-greekBlue text-white py-1.5 rounded-lg text-xs font-bold">שמירה</button>
+          <button onclick="cancelEditBudgetRow()" class="px-4 bg-stone-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 py-1.5 rounded-lg text-xs font-bold">ביטול</button>
+        </div>
+      </div>`;
+    }
     const val = budgetValues[r.key] ?? r.def ?? '';
-    return `<div class="grid grid-cols-[1fr_120px] items-center gap-3 p-4 border-b border-stone-100 dark:border-slate-700 last:border-0">
+    return `<div class="grid grid-cols-[1fr_100px] items-center gap-2 p-4 border-b border-stone-100 dark:border-slate-700 last:border-0">
       <div>
         <div class="font-semibold text-sm">${r.label}</div>
         <div class="text-xs opacity-60 mt-0.5">${r.note}</div>
+        <div class="flex gap-3 mt-1">
+          <button onclick="editBudgetRow('${r.key}')" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
+          <button onclick="removeBudgetRow('${r.key}')" class="text-[11px] font-bold text-rust hover:underline">מחיקה</button>
+        </div>
       </div>
       <input type="number" min="0" data-key="${r.key}" value="${val}" placeholder="0"
         class="budget-input w-full text-left px-2 py-2 rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900 text-sm">
@@ -1457,6 +1487,43 @@ function renderBudget(){
       document.getElementById('budgetTotal').innerHTML = `€${t.toLocaleString('he-IL')} <small class="font-normal text-sm opacity-80">ל־2 נוסעים</small>`;
     });
   });
+}
+
+function editBudgetRow(key){
+  editingBudgetKey = key;
+  renderBudget();
+}
+function cancelEditBudgetRow(){
+  editingBudgetKey = null;
+  renderBudget();
+}
+function saveEditBudgetRow(key){
+  const label = document.getElementById('editBudgetLabel').value.trim();
+  const note = document.getElementById('editBudgetNote').value.trim();
+  if(!label) return;
+  const r = budgetRows.find(r=>r.key===key);
+  r.label = label; r.note = note;
+  editingBudgetKey = null;
+  saveBudgetRows();
+  renderBudget();
+}
+function removeBudgetRow(key){
+  budgetRows = budgetRows.filter(r=>r.key!==key);
+  delete budgetValues[key];
+  saveBudgetRows();
+  saveBudget();
+  renderBudget();
+}
+function addBudgetRow(){
+  const label = document.getElementById('newBudgetLabel').value.trim();
+  const note = document.getElementById('newBudgetNote').value.trim();
+  if(!label) return;
+  const key = 'row' + budgetIdCounter++;
+  budgetRows.push({key, label, note: note || ''});
+  saveBudgetRows();
+  document.getElementById('newBudgetLabel').value = '';
+  document.getElementById('newBudgetNote').value = '';
+  renderBudget();
 }
 
 // ==================================================
