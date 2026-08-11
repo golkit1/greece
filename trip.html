@@ -475,6 +475,11 @@ let collapsedDays = {};
 let dayNotes = {};
 let editingDayNote = {};
 let dayNoteFormOpen = {};
+let stationEdits = {};      // "dayId-idx" -> {title, desc, hidden}
+let customStations = {};    // dayId -> [{id, title, desc}]
+let stationIdCounter = 1;
+let editingStationKey = null;   // "d{dayId}-s{idx}" for default, or "c{dayId}-{id}" for custom
+let stationAddFormOpen = {};
 let packingCategories = null; // null = not yet loaded/initialized
 let packIdCounter = 1;
 let budgetValues = {};
@@ -495,6 +500,11 @@ async function loadState(){
   try{ const r = await window.storage.get('visited-stations'); if(r) visited = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('day-done'); if(r) dayDone = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('collapsed-days'); if(r) collapsedDays = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('station-edits'); if(r) stationEdits = JSON.parse(r.value); }catch(e){}
+  try{
+    const r = await window.storage.get('custom-stations');
+    if(r){ const p = JSON.parse(r.value); customStations = p.stations || {}; stationIdCounter = p.idCounter || 1; }
+  }catch(e){}
   try{ const r = await window.storage.get('day-notes'); if(r) dayNotes = JSON.parse(r.value); }catch(e){}
   try{
     const r = await window.storage.get('packing-items');
@@ -527,6 +537,8 @@ async function saveNotes(){ try{ await window.storage.set('trip-notes', JSON.str
 async function saveVisited(){ try{ await window.storage.set('visited-stations', JSON.stringify(visited)); }catch(e){} }
 async function saveDayDone(){ try{ await window.storage.set('day-done', JSON.stringify(dayDone)); }catch(e){} }
 async function saveCollapsed(){ try{ await window.storage.set('collapsed-days', JSON.stringify(collapsedDays)); }catch(e){} }
+async function saveStationEdits(){ try{ await window.storage.set('station-edits', JSON.stringify(stationEdits)); }catch(e){} }
+async function saveCustomStations(){ try{ await window.storage.set('custom-stations', JSON.stringify({stations: customStations, idCounter: stationIdCounter})); }catch(e){} }
 async function saveDayNotes(){ try{ await window.storage.set('day-notes', JSON.stringify(dayNotes)); }catch(e){} }
 async function savePack(){ try{ await window.storage.set('packing-items', JSON.stringify({categories: packingCategories, idCounter: packIdCounter})); }catch(e){} }
 async function saveBudget(){ try{ await window.storage.set('budget-values', JSON.stringify(budgetValues)); }catch(e){} }
@@ -691,6 +703,19 @@ function renderHome(){
 // RENDER: ITINERARY
 // ==================================================
 function stationRow(dayId, idx, st){
+  const editKey = `d${dayId}-s${idx}`;
+  if(editingStationKey === editKey){
+    return `<div class="pb-4 last:pb-0 relative z-10">
+      <div class="bg-stone-50 dark:bg-slate-900 border-2 border-greekBlue rounded-xl p-3 space-y-2">
+        <input type="text" id="editStTitle" value="${st.title}" placeholder="כותרת" class="w-full px-2 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-800">
+        <textarea id="editStDesc" rows="2" placeholder="תיאור" class="w-full px-2 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-800">${st.desc}</textarea>
+        <div class="flex gap-2">
+          <button onclick="saveEditStation(${dayId},${idx})" class="flex-1 bg-greekBlue text-white py-1.5 rounded-lg text-xs font-bold">שמירה</button>
+          <button onclick="cancelEditStation()" class="px-4 bg-stone-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 py-1.5 rounded-lg text-xs font-bold">ביטול</button>
+        </div>
+      </div>
+    </div>`;
+  }
   const key = `d${dayId}-s${idx}`;
   const checked = visited[key] ? 'checked' : '';
   const done = visited[key] ? 'opacity-40 line-through' : '';
@@ -726,8 +751,97 @@ function stationRow(dayId, idx, st){
       <p class="text-xs opacity-70 mt-1">${st.desc}</p>
       ${navHtml}
       ${trailHtml}
+      <div class="flex gap-3 mt-1.5">
+        <button onclick="editStation(${dayId},${idx})" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
+        <button onclick="removeStation(${dayId},${idx})" class="text-[11px] font-bold text-rust hover:underline">מחיקה</button>
+      </div>
     </div>
   </div>`;
+}
+
+function customStationRow(dayId, cs){
+  const editKey = `c${dayId}-${cs.id}`;
+  if(editingStationKey === editKey){
+    return `<div class="pb-4 last:pb-0 relative z-10">
+      <div class="bg-stone-50 dark:bg-slate-900 border-2 border-greekBlue rounded-xl p-3 space-y-2">
+        <input type="text" id="editCstTitle" value="${cs.title}" placeholder="כותרת" class="w-full px-2 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-800">
+        <textarea id="editCstDesc" rows="2" placeholder="תיאור" class="w-full px-2 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-800">${cs.desc}</textarea>
+        <div class="flex gap-2">
+          <button onclick="saveEditCustomStation(${dayId},${cs.id})" class="flex-1 bg-greekBlue text-white py-1.5 rounded-lg text-xs font-bold">שמירה</button>
+          <button onclick="cancelEditStation()" class="px-4 bg-stone-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 py-1.5 rounded-lg text-xs font-bold">ביטול</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  return `<div class="flex gap-3 relative z-10 pb-4 last:pb-0">
+    <span class="w-5 h-5 mt-0.5 shrink-0 flex items-center justify-center text-greekBlue" title="תחנה שהוספת">➕</span>
+    <div class="flex-1">
+      <span class="font-bold text-sm">${cs.title}</span>
+      <p class="text-xs opacity-70 mt-1">${cs.desc}</p>
+      <div class="flex gap-3 mt-1.5">
+        <button onclick="editCustomStation(${dayId},${cs.id})" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
+        <button onclick="removeCustomStation(${dayId},${cs.id})" class="text-[11px] font-bold text-rust hover:underline">מחיקה</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function editStation(dayId, idx){
+  editingStationKey = `d${dayId}-s${idx}`;
+  collapsedDays[dayId] = false;
+  renderItinerary(currentActiveLeg());
+}
+function editCustomStation(dayId, id){
+  editingStationKey = `c${dayId}-${id}`;
+  collapsedDays[dayId] = false;
+  renderItinerary(currentActiveLeg());
+}
+function cancelEditStation(){
+  editingStationKey = null;
+  renderItinerary(currentActiveLeg());
+}
+function saveEditStation(dayId, idx){
+  const title = document.getElementById('editStTitle').value.trim();
+  const desc = document.getElementById('editStDesc').value.trim();
+  if(!title) return;
+  stationEdits[`${dayId}-${idx}`] = { title, desc, hidden:false };
+  editingStationKey = null;
+  saveStationEdits();
+  renderItinerary(currentActiveLeg());
+}
+function saveEditCustomStation(dayId, id){
+  const title = document.getElementById('editCstTitle').value.trim();
+  const desc = document.getElementById('editCstDesc').value.trim();
+  if(!title) return;
+  const cs = customStations[dayId].find(c=>c.id===id);
+  cs.title = title; cs.desc = desc;
+  editingStationKey = null;
+  saveCustomStations();
+  renderItinerary(currentActiveLeg());
+}
+function removeStation(dayId, idx){
+  stationEdits[`${dayId}-${idx}`] = { ...(stationEdits[`${dayId}-${idx}`]||{}), hidden:true };
+  saveStationEdits();
+  renderItinerary(currentActiveLeg());
+}
+function removeCustomStation(dayId, id){
+  customStations[dayId] = (customStations[dayId]||[]).filter(c=>c.id!==id);
+  saveCustomStations();
+  renderItinerary(currentActiveLeg());
+}
+function toggleStationAddForm(dayId){
+  stationAddFormOpen[dayId] = !stationAddFormOpen[dayId];
+  renderItinerary(currentActiveLeg());
+}
+function addCustomStation(dayId){
+  const title = document.getElementById(`newStTitle-${dayId}`).value.trim();
+  const desc = document.getElementById(`newStDesc-${dayId}`).value.trim();
+  if(!title) return;
+  if(!customStations[dayId]) customStations[dayId] = [];
+  customStations[dayId].push({ id: stationIdCounter++, title, desc });
+  stationAddFormOpen[dayId] = false;
+  saveCustomStations();
+  renderItinerary(currentActiveLeg());
 }
 
 function dayCard(day){
@@ -736,7 +850,26 @@ function dayCard(day){
       <i data-lucide="car" class="w-3.5 h-3.5"></i>
       <span>סה"כ נסיעה נטו: ${day.travel.time} · ${day.travel.km}</span>
     </div>` : '';
-  const stations = day.stations.map((s,i)=>stationRow(day.id,i,s)).join('');
+  const defaultStationsHtml = day.stations.map((s,i)=>{
+    const edit = stationEdits[`${day.id}-${i}`];
+    if(edit && edit.hidden) return '';
+    const merged = edit ? {...s, title:edit.title, desc:edit.desc} : s;
+    return stationRow(day.id,i,merged);
+  }).join('');
+  const customStationsHtml = (customStations[day.id]||[]).map(cs=>customStationRow(day.id,cs)).join('');
+  const addFormOpen = !!stationAddFormOpen[day.id];
+  const addStationHtml = `<div class="relative z-10 pt-1">
+    <button onclick="event.stopPropagation(); toggleStationAddForm(${day.id})" class="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-stone-200 dark:border-slate-700 bg-stone-50 dark:bg-slate-900 text-xs font-bold text-slate-600 dark:text-slate-300">
+      <span>➕ הוספת תחנה</span>
+      <i data-lucide="chevron-down" class="w-4 h-4 transition-transform ${addFormOpen ? 'rotate-180' : ''}"></i>
+    </button>
+    <div class="${addFormOpen ? '' : 'hidden'} mt-2 space-y-1.5">
+      <input type="text" id="newStTitle-${day.id}" placeholder="כותרת התחנה" class="w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-800">
+      <textarea id="newStDesc-${day.id}" rows="2" placeholder="תיאור (אופציונלי)" class="w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 dark:border-slate-600 bg-white dark:bg-slate-800"></textarea>
+      <button onclick="addCustomStation(${day.id})" class="w-full bg-greekBlue text-white py-1.5 rounded-lg text-xs font-bold">הוספה</button>
+    </div>
+  </div>`;
+  const stations = defaultStationsHtml + customStationsHtml + addStationHtml;
   const isDone = !!dayDone[day.id];
   const isCollapsed = collapsedDays.hasOwnProperty(day.id) ? collapsedDays[day.id] : true;
   const notes = dayNotes[day.id] || [];
