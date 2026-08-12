@@ -160,6 +160,10 @@
         </div>
         <textarea id="noteBody" placeholder="תוכן ההערה..." rows="2" class="w-full px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900"></textarea>
         <div class="flex gap-2">
+          <input type="date" id="noteDate" class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+          <input type="time" id="noteTime" class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+        </div>
+        <div class="flex gap-2">
           <button onclick="addNote()" id="noteSaveBtn" class="flex-1 bg-greekBlue text-white py-2 rounded-lg text-sm font-bold">הוספת הערה</button>
           <button onclick="cancelEditNote()" id="noteCancelBtn" class="hidden px-4 bg-stone-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 py-2 rounded-lg text-sm font-bold">ביטול</button>
         </div>
@@ -670,6 +674,24 @@ function renderFlightInfo(){
   });
 }
 
+function gcalLink(title, details, date, time){
+  if(!date) return null;
+  const pad = n => String(n).padStart(2,'0');
+  let startStr, endStr;
+  if(time){
+    const start = new Date(`${date}T${time}:00`);
+    const end = new Date(start.getTime() + 60*60000);
+    const fmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+    startStr = fmt(start); endStr = fmt(end);
+  } else {
+    const d = new Date(`${date}T00:00:00`);
+    const nd = new Date(d.getTime() + 86400000);
+    const fmtDate = dd => `${dd.getFullYear()}${pad(dd.getMonth()+1)}${pad(dd.getDate())}`;
+    startStr = fmtDate(d); endStr = fmtDate(nd);
+  }
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(details||'')}`;
+}
+
 const noteStyles = {
   reminder: {icon:"bell", bg:"bg-amber-50 dark:bg-amber-950/20", border:"border-amber-200", iconColor:"text-amber-600"},
   tip:     {icon:"lightbulb",      bg:"bg-emerald-50 dark:bg-emerald-950/20", border:"border-emerald-200", iconColor:"text-emerald-600"},
@@ -683,6 +705,9 @@ function renderNotes(){
   } else {
     list.innerHTML = tripNotes.map((n,i)=>{
       const s = noteStyles[n.type] || noteStyles.info;
+      const dtLabel = n.date ? `<span class="text-[11px] font-semibold opacity-60">📅 ${n.date}${n.time ? ' · '+n.time : ''}</span>` : '';
+      const gcal = n.date ? gcalLink(n.title, n.body, n.date, n.time) : null;
+      const gcalBtn = gcal ? `<a href="${gcal}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">➕ הוסף ליומן</a>` : '';
       return `<div class="rounded-2xl border ${s.border} ${s.bg} p-4">
         <div class="flex items-start gap-3">
           <i data-lucide="${s.icon}" class="w-5 h-5 ${s.iconColor} shrink-0 mt-0.5"></i>
@@ -695,6 +720,7 @@ function renderNotes(){
               </div>
             </div>
             <p class="text-sm opacity-80 mt-1">${n.body}</p>
+            <div class="flex items-center gap-3 mt-2 flex-wrap">${dtLabel}${gcalBtn}</div>
           </div>
         </div>
       </div>`;
@@ -709,8 +735,10 @@ function addNote(){
   const type = document.getElementById('noteType').value;
   const title = document.getElementById('noteTitle').value.trim();
   const body = document.getElementById('noteBody').value.trim();
+  const date = document.getElementById('noteDate').value;
+  const time = document.getElementById('noteTime').value;
   if(!title && !body) return;
-  const note = {type, title: title || '(ללא כותרת)', body};
+  const note = {type, title: title || '(ללא כותרת)', body, date: date || null, time: time || null};
   if(editingNoteIndex !== null){
     tripNotes[editingNoteIndex] = note;
     editingNoteIndex = null;
@@ -720,6 +748,8 @@ function addNote(){
   saveNotes();
   document.getElementById('noteTitle').value = '';
   document.getElementById('noteBody').value = '';
+  document.getElementById('noteDate').value = '';
+  document.getElementById('noteTime').value = '';
   document.getElementById('noteType').value = 'reminder';
   document.getElementById('noteSaveBtn').textContent = 'הוספת הערה';
   document.getElementById('noteCancelBtn').classList.add('hidden');
@@ -740,6 +770,8 @@ function editNote(i){
   document.getElementById('noteType').value = n.type;
   document.getElementById('noteTitle').value = n.title === '(ללא כותרת)' ? '' : n.title;
   document.getElementById('noteBody').value = n.body;
+  document.getElementById('noteDate').value = n.date || '';
+  document.getElementById('noteTime').value = n.time || '';
   document.getElementById('noteSaveBtn').textContent = 'עדכון הערה';
   document.getElementById('noteCancelBtn').classList.remove('hidden');
   document.getElementById('noteTitle').scrollIntoView({behavior:'smooth', block:'center'});
@@ -749,6 +781,8 @@ function cancelEditNote(){
   editingNoteIndex = null;
   document.getElementById('noteTitle').value = '';
   document.getElementById('noteBody').value = '';
+  document.getElementById('noteDate').value = '';
+  document.getElementById('noteTime').value = '';
   document.getElementById('noteType').value = 'reminder';
   document.getElementById('noteSaveBtn').textContent = 'הוספת הערה';
   document.getElementById('noteCancelBtn').classList.add('hidden');
@@ -1020,6 +1054,10 @@ function dayCard(day){
             </div>
           </div>
           <p class="text-xs opacity-80 mt-0.5">${n.body}</p>
+          <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+            ${n.date ? `<span class="text-[10px] font-semibold opacity-60">📅 ${n.date}${n.time ? ' · '+n.time : ''}</span>` : ''}
+            ${n.date ? `<a href="${gcalLink(n.title, n.body, n.date, n.time)}" target="_blank" rel="noopener" class="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline">➕ הוסף ליומן</a>` : ''}
+          </div>
         </div>
       </div>
     </div>`;
@@ -1045,6 +1083,10 @@ function dayCard(day){
       </div>
       <textarea id="dnBody-${day.id}" placeholder="למשל: לא לשכוח להוציא סים ישראלי מהפלאפון..." rows="2"
         class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/10">${editingNote ? editingNote.body : ''}</textarea>
+      <div class="flex gap-2 mt-1.5">
+        <input type="date" id="dnDate-${day.id}" value="${editingNote && editingNote.date ? editingNote.date : ''}" class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/10">
+        <input type="time" id="dnTime-${day.id}" value="${editingNote && editingNote.time ? editingNote.time : ''}" class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/10">
+      </div>
       <div class="flex gap-2 mt-1.5">
         <button onclick="addDayNote(${day.id})" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-1.5 rounded-lg text-xs font-bold">${editingNote ? 'עדכון הערה' : 'הוספת הערה'}</button>
         ${editingNote ? `<button onclick="cancelEditDayNote(${day.id})" class="px-3 bg-stone-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 py-1.5 rounded-lg text-xs font-bold">ביטול</button>` : ''}
@@ -1181,9 +1223,11 @@ function addDayNote(dayId){
   const type = document.getElementById(`dnType-${dayId}`).value;
   const title = document.getElementById(`dnTitle-${dayId}`).value.trim();
   const body = document.getElementById(`dnBody-${dayId}`).value.trim();
+  const date = document.getElementById(`dnDate-${dayId}`).value;
+  const time = document.getElementById(`dnTime-${dayId}`).value;
   if(!title && !body) return;
   if(!dayNotes[dayId]) dayNotes[dayId] = [];
-  const note = {type, title: title || '(ללא כותרת)', body};
+  const note = {type, title: title || '(ללא כותרת)', body, date: date || null, time: time || null};
   const editIdx = editingDayNote[dayId];
   if(editIdx !== undefined && editIdx !== null){
     dayNotes[dayId][editIdx] = note;
