@@ -482,6 +482,8 @@ let dayNotes = {};
 let editingDayNote = {};
 let dayNoteFormOpen = {};
 let stationEdits = {};      // "dayId-idx" -> {title, desc, hidden}
+let stationNotes = {};      // stationKey -> note text
+let stationNoteFormOpen = {};
 let customStations = {};    // dayId -> [{id, title, desc}]
 let stationIdCounter = 1;
 let editingStationKey = null;   // "d{dayId}-s{idx}" for default, or "c{dayId}-{id}" for custom
@@ -512,6 +514,7 @@ async function loadState(){
   try{ const r = await window.storage.get('day-done'); if(r) dayDone = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('collapsed-days'); if(r) collapsedDays = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('station-edits'); if(r) stationEdits = JSON.parse(r.value); }catch(e){}
+  try{ const r = await window.storage.get('station-notes'); if(r) stationNotes = JSON.parse(r.value); }catch(e){}
   try{
     const r = await window.storage.get('custom-stations');
     if(r){ const p = JSON.parse(r.value); customStations = p.stations || {}; stationIdCounter = p.idCounter || 1; }
@@ -561,6 +564,7 @@ async function saveVisited(){ try{ await window.storage.set('visited-stations', 
 async function saveDayDone(){ try{ await window.storage.set('day-done', JSON.stringify(dayDone)); }catch(e){} }
 async function saveCollapsed(){ try{ await window.storage.set('collapsed-days', JSON.stringify(collapsedDays)); }catch(e){} }
 async function saveStationEdits(){ try{ await window.storage.set('station-edits', JSON.stringify(stationEdits)); }catch(e){} }
+async function saveStationNotes(){ try{ await window.storage.set('station-notes', JSON.stringify(stationNotes)); }catch(e){} }
 async function saveCustomStations(){ try{ await window.storage.set('custom-stations', JSON.stringify({stations: customStations, idCounter: stationIdCounter})); }catch(e){} }
 async function saveDayNotes(){ try{ await window.storage.set('day-notes', JSON.stringify(dayNotes)); }catch(e){} }
 async function savePack(){ try{ await window.storage.set('packing-items', JSON.stringify({categories: packingCategories, idCounter: packIdCounter})); }catch(e){} }
@@ -779,6 +783,25 @@ function renderHome(){
 // ==================================================
 // RENDER: ITINERARY
 // ==================================================
+function stationNoteHtml(stKey){
+  const note = stationNotes[stKey] || '';
+  const open = !!stationNoteFormOpen[stKey] || !!note;
+  return `<div class="mt-2">
+    <button onclick="event.stopPropagation(); toggleStationNoteForm('${stKey}')" class="text-[11px] font-bold text-amber-700 dark:text-amber-400 hover:underline flex items-center gap-1">
+      <span>📌 ${note ? 'הערה לתחנה' : '+ הערה לתחנה'}</span>
+    </button>
+    <div class="${open ? '' : 'hidden'} mt-1.5">
+      <textarea data-st-note-key="${stKey}" rows="2" placeholder="הערה אישית לתחנה הזו..."
+        class="station-note-input w-full px-2.5 py-1.5 text-xs rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/10">${note}</textarea>
+    </div>
+  </div>`;
+}
+
+function toggleStationNoteForm(stKey){
+  stationNoteFormOpen[stKey] = !stationNoteFormOpen[stKey];
+  renderItinerary(currentActiveLeg());
+}
+
 function stationRow(dayId, idx, st){
   const editKey = `d${dayId}-s${idx}`;
   if(editingStationKey === editKey){
@@ -828,6 +851,7 @@ function stationRow(dayId, idx, st){
       <p class="text-xs opacity-70 mt-1">${st.desc}</p>
       ${navHtml}
       ${trailHtml}
+      ${stationNoteHtml(editKey)}
       <div class="flex gap-3 mt-1.5">
         <button onclick="editStation(${dayId},${idx})" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
         <button onclick="removeStation(${dayId},${idx})" class="text-[11px] font-bold text-rust hover:underline">מחיקה</button>
@@ -855,6 +879,7 @@ function customStationRow(dayId, cs){
     <div class="flex-1">
       <span class="font-bold text-sm">${cs.title}</span>
       <p class="text-xs opacity-70 mt-1">${cs.desc}</p>
+      ${stationNoteHtml(editKey)}
       <div class="flex gap-3 mt-1.5">
         <button onclick="editCustomStation(${dayId},${cs.id})" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
         <button onclick="removeCustomStation(${dayId},${cs.id})" class="text-[11px] font-bold text-rust hover:underline">מחיקה</button>
@@ -1087,6 +1112,13 @@ function renderItinerary(leg){
       if(!dayLodging[dayId]) dayLodging[dayId] = { hotelName:'', url:'' };
       dayLodging[dayId][field] = inp.value;
       saveDayLodging();
+    });
+  });
+  document.querySelectorAll('.station-note-input').forEach(ta=>{
+    ta.addEventListener('click', e=> e.stopPropagation());
+    ta.addEventListener('input', ()=>{
+      stationNotes[ta.dataset.stNoteKey] = ta.value;
+      saveStationNotes();
     });
   });
 }
