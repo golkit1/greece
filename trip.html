@@ -485,6 +485,7 @@ let collapsedDays = {};
 let dayNotes = {};
 let editingDayNote = {};
 let dayNoteFormOpen = {};
+let notesListOpen = {};
 let stationEdits = {};      // "dayId-idx" -> {title, desc, hidden}
 let stationNotes = {};      // stationKey -> note text
 let stationNoteFormOpen = {};
@@ -702,34 +703,47 @@ function renderNotes(){
   const list = document.getElementById('notesList');
   if(tripNotes.length === 0){
     list.innerHTML = `<p class="text-sm opacity-50 text-center py-4">אין עדיין הערות. הוסיפו למטה.</p>`;
-  } else {
-    list.innerHTML = tripNotes.map((n,i)=>{
-      const s = noteStyles[n.type] || noteStyles.info;
-      const dtLabel = n.date ? `<span class="text-[11px] font-semibold opacity-60">📅 ${n.date}${n.time ? ' · '+n.time : ''}</span>` : '';
-      const gcal = n.date ? gcalLink(n.title, n.body, n.date, n.time) : null;
-      const gcalBtn = gcal ? `<a href="${gcal}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">➕ הוסף ליומן</a>` : '';
-      return `<div class="rounded-2xl border ${s.border} ${s.bg} p-4">
-        <div class="flex items-start gap-3">
-          <i data-lucide="${s.icon}" class="w-5 h-5 ${s.iconColor} shrink-0 mt-0.5"></i>
-          <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-start gap-2">
-              <h3 class="font-bold text-sm">${n.title}</h3>
-              <div class="flex items-center gap-2 shrink-0">
-                <button onclick="editNote(${i})" class="text-xs font-bold text-greekBlue hover:underline flex items-center gap-1" title="עריכה"><i data-lucide="pencil" class="w-4 h-4"></i><span>עריכה</span></button>
-                <button onclick="removeNote(${i})" class="text-xs font-bold text-rust hover:underline flex items-center gap-1" title="מחיקה"><i data-lucide="x" class="w-4 h-4"></i><span>מחיקה</span></button>
-              </div>
-            </div>
-            <p class="text-sm opacity-80 mt-1">${n.body}</p>
-            <div class="flex items-center gap-3 mt-2 flex-wrap">${dtLabel}${gcalBtn}</div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
+    safeIcons();
+    return;
   }
+  const listOpen = generalNotesListOpen;
+  const itemsHtml = tripNotes.map((n,i)=>{
+    const s = noteStyles[n.type] || noteStyles.info;
+    const dtLabel = n.date ? `<span class="text-[11px] font-semibold opacity-60">📅 ${n.date}${n.time ? ' · '+n.time : ''}</span>` : '';
+    const gcal = n.date ? gcalLink(n.title, n.body, n.date, n.time) : null;
+    const gcalBtn = gcal ? `<a href="${gcal}" target="_blank" rel="noopener" class="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline">➕ הוסף ליומן</a>` : '';
+    return `<div class="rounded-2xl border ${s.border} ${s.bg} p-4">
+      <div class="flex items-start gap-3">
+        <i data-lucide="${s.icon}" class="w-5 h-5 ${s.iconColor} shrink-0 mt-0.5"></i>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="font-bold text-sm">${n.title}</h3>
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="editNote(${i})" class="text-xs font-bold text-greekBlue hover:underline flex items-center gap-1" title="עריכה"><i data-lucide="pencil" class="w-4 h-4"></i><span>עריכה</span></button>
+              <button onclick="removeNote(${i})" class="text-xs font-bold text-rust hover:underline flex items-center gap-1" title="מחיקה"><i data-lucide="x" class="w-4 h-4"></i><span>מחיקה</span></button>
+            </div>
+          </div>
+          <p class="text-sm opacity-80 mt-1">${n.body}</p>
+          <div class="flex items-center gap-3 mt-2 flex-wrap">${dtLabel}${gcalBtn}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  list.innerHTML = `<button onclick="toggleGeneralNotesList()" class="w-full flex items-center justify-between px-1 py-1 text-sm font-bold text-greekDark dark:text-slate-100 mb-1">
+      <span>הערות (${tripNotes.length})</span>
+      <i data-lucide="chevron-down" class="w-4 h-4 transition-transform ${listOpen ? 'rotate-180' : ''}"></i>
+    </button>
+    <div class="${listOpen ? '' : 'hidden'} space-y-3">${itemsHtml}</div>`;
   safeIcons();
 }
 
 let editingNoteIndex = null;
+let generalNotesListOpen = false;
+
+function toggleGeneralNotesList(){
+  generalNotesListOpen = !generalNotesListOpen;
+  renderNotes();
+}
 
 function addNote(){
   const type = document.getElementById('noteType').value;
@@ -1064,9 +1078,14 @@ function dayCard(day){
   }).join('');
 
   const formOpen = !!dayNoteFormOpen[day.id] || !!editingNote;
+  const listOpen = !!notesListOpen[day.id];
+  const notesListToggle = notes.length ? `<button onclick="event.stopPropagation(); toggleNotesListOpen(${day.id})" class="w-full flex items-center justify-between px-1 py-1 text-xs font-bold text-amber-700 dark:text-amber-400 mb-1">
+    <span class="flex items-center gap-1.5"><i data-lucide="pin" class="w-3.5 h-3.5"></i> הערות ליום זה (${notes.length})</span>
+    <i data-lucide="chevron-down" class="w-4 h-4 transition-transform ${listOpen ? 'rotate-180' : ''}"></i>
+  </button>` : `<label class="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 mb-1"><i data-lucide="pin" class="w-3.5 h-3.5"></i> הערות ליום זה</label>`;
   const notesFormHtml = `<div class="mt-3">
-    <label class="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 mb-1"><i data-lucide="pin" class="w-3.5 h-3.5"></i> הערות ליום זה</label>
-    ${notesListHtml}
+    ${notesListToggle}
+    <div class="${(notes.length && !listOpen) ? 'hidden' : ''}">${notesListHtml}</div>
     <button onclick="event.stopPropagation(); toggleDayNoteForm(${day.id})" class="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/10 text-xs font-bold text-amber-700 dark:text-amber-400">
       <span>➕ הוספת הערה</span>
       <i data-lucide="chevron-down" class="w-4 h-4 transition-transform ${formOpen ? 'rotate-180' : ''}"></i>
@@ -1212,6 +1231,11 @@ function toggleLodgingForm(dayId){
 
 function currentActiveLeg(){
   return document.querySelector('.leg-btn[data-active="1"]')?.dataset.leg || 'zagoria';
+}
+
+function toggleNotesListOpen(dayId){
+  notesListOpen[dayId] = !notesListOpen[dayId];
+  renderItinerary(currentActiveLeg());
 }
 
 function toggleDayNoteForm(dayId){
