@@ -139,6 +139,17 @@
     <div id="dayCards" class="space-y-4"></div>
   </section>
 
+  <!-- PLAN B -->
+  <section id="view-planb" class="tab-view space-y-4">
+    <div>
+      <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">תוכנית ב׳ — מסלולים קצרים בזגוריה</h2>
+      <p class="text-sm opacity-70 mt-1">חלופות למקרה שלא נעשה את ההליכות הארוכות: מזג אוויר, עייפות או נהר גבוה. אפשר לסמן מועדפים ולהוסיף כל חלופה כתחנה ליום בזגוריה.</p>
+      <a href="https://www.laderech.com/travel-zagori/" target="_blank" rel="noopener" class="inline-block mt-1 text-xs font-bold text-greekBlue dark:text-sky-400 hover:underline">מקור: "צאו לדרך" — מסלולים ותצפיות בזגוריה ↗</a>
+    </div>
+    <div class="flex gap-2" id="planbFilters"></div>
+    <div id="planbList" class="space-y-6"></div>
+  </section>
+
   <!-- NOTES -->
   <section id="view-notes" class="tab-view space-y-4">
     <h2 class="text-lg font-bold text-greekDark dark:text-slate-100">הנחיות והערות</h2>
@@ -347,6 +358,7 @@ const places = {
 const DEFAULT_NAV_TABS = [
   { id:"home", icon:"home", label:"בית" },
   { id:"itinerary", icon:"route", label:"מסלול" },
+  { id:"planb", icon:"shuffle", label:"תוכנית ב׳" },
   { id:"links", icon:"link", label:"קישורים" },
   { id:"documents", icon:"file-text", label:"מסמכים" },
   { id:"notes", icon:"sticky-note", label:"הערות" },
@@ -447,6 +459,78 @@ const tripDays = [
     ]}
 ];
 
+// ==================================================
+// PLAN B — short Zagoria alternatives
+// ==================================================
+const PLAN_B_GROUPS = [
+  { key:"short",  label:"תצפיות והליכות קצרות", hint:"עד כשעה הלוך ושוב. מתאים לאחר צהריים או ליום מנוחה." },
+  { key:"medium", label:"הליכות בינוניות לאורך נהר", hint:"אפשר לקצר כמה שרוצים ולחזור באותו שביל." },
+  { key:"vikos",  label:"קיצור של גיא הויקוס", hint:"אם בכל זאת רוצים את הגיא, אבל פחות." },
+  { key:"rest",   label:"בלי הליכה — גשרים ופעילויות", hint:"עצירות קצרות מהרכב, פיקניק ליד המים." }
+];
+
+const PLAN_B = [
+  { id:"oxya", group:"short", title:"תצפית אוקסיה", near:"קצה הכביש אחרי מונודנדרי",
+    distance:"כ-100 מ' לכל כיוון", duration:"כמה דקות", difficulty:"קל מאוד",
+    desc:"מרפסת תצפית על גיא הויקוס בסוף הכביש, שביל קצר בירידה קלה (החזרה בעלייה). בדרך אליה, בצד הכביש — יער האבנים, תצורות סלע שאפשר לעצור ולהסתובב ביניהן.",
+    warn:"חלק מהתצפית לא מגודר.",
+    links:[{label:"מיקום התצפית", url:"https://maps.app.goo.gl/8FBa7dM1MFWG3KLS6"}] },
+  { id:"paraskevi", group:"short", title:"מנזר אגיה פרסקבי", near:"מונודנדרי — יוצא מהכיכר המרכזית",
+    distance:"כ-750 מ' לכל כיוון", ascent:"כ-50 מ' (החזרה בעלייה)", difficulty:"קל",
+    desc:"שביל נוח דרך חורש מהכיכר של מונודנדרי אל מנזר על שפת הגיא, עם תצפית על הקניון. אפשר לשלב עם ארוחה בכיכר.",
+    warn:"התצפית לא מגודרת. השביל שממשיך אחרי המנזר מסוכן — לא להמשיך בו.",
+    links:[{label:"חניון בכיכר", url:"https://maps.app.goo.gl/ev21iAPSrggP86Vh7"},{label:"המנזר והתצפית", url:"https://maps.app.goo.gl/LJEfvPn3bz7P2Npt9"}] },
+  { id:"beloi", group:"short", title:"תצפית בלוי", near:"ליד הכפר ורדטו",
+    distance:"1.3 ק\"מ לכל כיוון", duration:"כ-30 דקות לכל כיוון", difficulty:"קל",
+    desc:"נחשבת לתצפית היפה ביותר על גיא הויקוס — קירות סלע עצומים. יש חניון קטן, ומשם שביל עפר לתחילת המסלול (אפשר להמשיך ברכב בזהירות עד ההתחלה).",
+    warn:"התצפית לא מגודרת.",
+    links:[{label:"נקודת התחלה", url:"https://maps.app.goo.gl/Jo16TuLB4yMQaTru7"}] },
+  { id:"springs", group:"short", title:"מעיינות הווידומאטיס", near:"הכפר ויקוס",
+    distance:"1.5 ק\"מ לכל כיוון", ascent:"כ-300 מ' ירידה ועלייה", duration:"כ-45 ד' למטה, עד שעה וחצי חזרה", difficulty:"קל–בינוני",
+    desc:"ירידה לתחתית הגיא אל מקור הנהר — מים צלולים וקרים מאוד. קצר במרחק אבל העלייה בחזרה מורגשת.",
+    links:[{label:"נקודת התחלה בכפר ויקוס", url:"https://maps.app.goo.gl/J7cFP3CaxYi2b4W3A"}],
+    frame:"https://en.frame.mapy.cz/s/fefamonozo" },
+
+  { id:"iceage", group:"medium", title:"מסלול דור הקרח", near:"בין אריסטי/פפיגו לגשר קלידוניה",
+    distance:"4.5 ק\"מ לכל כיוון (אפשר לקצר)", ascent:"כ-100 מ' לכל כיוון", difficulty:"קל–בינוני",
+    desc:"לאורך נהר הווידומאטיס, עם הרבה פינות ישיבה וטבילה ליד המים וקטעים בין סלעים מעל הנהר. אפשר ללכת חלק ולחזור, לתאם מונית מהצד השני, או לחזור ברפטינג.",
+    links:[{label:"צד אריסטי", url:"https://maps.app.goo.gl/ZQGJ1vPJyvS9yvu37"},{label:"צד גשר קלידוניה", url:"https://maps.app.goo.gl/qwqjN9LjRAVtmqTQA"}],
+    frame:"https://en.frame.mapy.cz/s/rafapunofe" },
+  { id:"aoos", group:"medium", title:"קניון האאוס מגשר קוניצה", near:"העיירה קוניצה, צפון זגוריה",
+    distance:"עד 5 ק\"מ לכל כיוון (עד מנזר סטומיו)", difficulty:"קל",
+    desc:"שביל לאורך נהר האאוס מהגשר העתיק, אפשר לקצר כמה שרוצים. חלופה טובה ליום גשום: בקוניצה יש מסעדות, בתי קפה ומאפייה, וליד הגשר גם מפל ומדרגות לגדת הנהר.",
+    links:[{label:"חניה ליד הגשר", url:"https://maps.app.goo.gl/kMreDjfthedSiK9M9"},{label:"גשר קוניצה", url:"https://maps.app.goo.gl/BV5cHqB5DALt66Lm8"}],
+    frame:"https://en.frame.mapy.cz/s/fedepohozo" },
+
+  { id:"vikosshort", group:"vikos", title:"גיא הויקוס — סיום בכפר ויקוס", near:"מונודנדרי ← הכפר ויקוס",
+    distance:"12 ק\"מ (במקום 15)", ascent:"כ-1,000 מ' ירידה ועלייה", difficulty:"קשה, אבל העלייה בסוף מתונה יותר",
+    desc:"אותה התחלה ממונודנדרי, סיום מוקדם בכפר ויקוס ומונית משם. אם הנהר גבוה מדי לחצייה — זו האפשרות היחידה ממילא.",
+    warn:"הלינה המתוכננת היא במגאלו פאפינגקו — צריך לתאם מונית מויקוס לפאפינגקו.",
+    frame:"https://en.frame.mapy.cz/s/remujevuso" },
+
+  { id:"aristi", group:"rest", title:"גשר אריסטי", near:"בין אריסטי לפפיגו",
+    difficulty:"ללא הליכה",
+    desc:"הנקודה הכי מתאימה לפיקניק ומנוחת צהריים: נהר זורם, הרבה צל ושטח ללכת לאורך המים. חניה גדולה ליד הגשר.",
+    links:[{label:"ניווט לגשר", url:"https://maps.app.goo.gl/KPKr1WRT59h8mHS57"}] },
+  { id:"klidonia", group:"rest", title:"גשר קלידוניה", near:"קצה מסלול דור הקרח",
+    difficulty:"ללא הליכה",
+    desc:"גשר אבן עתיק, חניה סמוכה ופינות מוצלות ליד הנהר. המים כאן זורמים כל השנה.",
+    links:[{label:"ניווט לגשר", url:"https://maps.app.goo.gl/kyE1UK2KGeW3dkre7"}] },
+  { id:"konitsa", group:"rest", title:"גשר קוניצה", near:"קוניצה",
+    difficulty:"ללא הליכה",
+    desc:"גשר אבן גדול ומרשים, עם שטח רחב מתחתיו לשבת ליד הנהר. המים פחות קרים מאשר בווידומאטיס.",
+    links:[{label:"ניווט לגשר", url:"https://maps.app.goo.gl/BV5cHqB5DALt66Lm8"}] },
+  { id:"kokkorou", group:"rest", title:"גשר קוקורו", near:"על הכביש ממונודנדרי לכיוון תצפית בלוי",
+    difficulty:"ללא הליכה",
+    desc:"גשר יפה קרוב מאוד לכביש — עצירה קצרה בדרך לבלוי.",
+    warn:"בסתיו הנהר מתחתיו עלול להיות יבש.",
+    links:[{label:"ניווט לגשר", url:"https://maps.app.goo.gl/vYgSS4RKeXXXHXuj8"}] },
+  { id:"rafting", group:"rest", title:"רפטינג בנהר הווידומאטיס", near:"אזור אריסטי",
+    difficulty:"רגוע, מתאים למתחילים",
+    desc:"רפטינג מתון יחסית, דרך חברות מקומיות שמספקות את כל הציוד. אפשר לשלב: הליכה בכיוון אחד במסלול דור הקרח וחזרה ברפטינג.",
+    links:[{label:"פרטים והזמנה", url:"https://www.getyourguide.com/ioannina-l1342/epirus-easy-rafting-experience-on-the-voidomatis-river-t205465/"}] }
+];
+
 const DEFAULT_LINK_CATEGORIES = [
   { key:"athens", label:"אתונה", color:"athensC" },
   { key:"north",  label:"צפון יוון / זגוריה", color:"zagoria" },
@@ -515,6 +599,10 @@ let flightInfo = {
 let tripNotes = [];
 let darkMode = false;
 let navTabs = null;
+let planbPicks = {};        // planB id -> true
+let planbOpen = {};         // planB id -> expanded
+let planbAdded = {};        // planB id -> dayId it was just added to (session only)
+let planbFilter = 'all';
 
 async function loadState(){
   try{ const r = await window.storage.get('visited-stations'); if(r) visited = JSON.parse(r.value); }catch(e){}
@@ -560,7 +648,18 @@ async function loadState(){
   try{ const r = await window.storage.get('trip-notes'); if(r) tripNotes = JSON.parse(r.value); }catch(e){}
   try{ const r = await window.storage.get('dark-mode'); if(r) darkMode = r.value === 'true'; }catch(e){}
   try{ const r = await window.storage.get('nav-tabs'); if(r) navTabs = JSON.parse(r.value); }catch(e){}
-  if(!navTabs) navTabs = DEFAULT_NAV_TABS.map(t=>({...t}));
+  if(!navTabs){
+    navTabs = DEFAULT_NAV_TABS.map(t=>({...t}));
+  } else {
+    // a saved tab order predates new tabs — add any missing default tab right after its predecessor
+    DEFAULT_NAV_TABS.forEach((dt, i)=>{
+      if(navTabs.find(t=>t.id===dt.id)) return;
+      const prevId = i > 0 ? DEFAULT_NAV_TABS[i-1].id : null;
+      const prevIdx = prevId ? navTabs.findIndex(t=>t.id===prevId) : -1;
+      navTabs.splice(prevIdx + 1, 0, {...dt});
+    });
+  }
+  try{ const r = await window.storage.get('planb-picks'); if(r) planbPicks = JSON.parse(r.value); }catch(e){}
 }
 async function saveDayLodging(){ try{ await window.storage.set('day-lodging', JSON.stringify(dayLodging)); }catch(e){} }
 async function saveLinks(){ try{ await window.storage.set('saved-links', JSON.stringify(savedLinks)); }catch(e){} }
@@ -579,6 +678,7 @@ async function saveBudget(){ try{ await window.storage.set('budget-values', JSON
 async function saveBudgetRows(){ try{ await window.storage.set('budget-rows', JSON.stringify({rows: budgetRows, idCounter: budgetIdCounter})); }catch(e){} }
 async function saveDark(){ try{ await window.storage.set('dark-mode', String(darkMode)); }catch(e){} }
 async function saveNavTabs(){ try{ await window.storage.set('nav-tabs', JSON.stringify(navTabs)); }catch(e){} }
+async function savePlanbPicks(){ try{ await window.storage.set('planb-picks', JSON.stringify(planbPicks)); }catch(e){} }
 
 // ==================================================
 // RENDER: HOME
@@ -924,11 +1024,15 @@ function customStationRow(dayId, cs){
       </div>
     </div>`;
   }
+  const pb = cs.planb ? PLAN_B.find(p=>p.id===cs.planb) : null;
+  const pbLinks = pb && pb.links ? `<div class="flex gap-2 mt-1.5 flex-wrap">${pb.links.map(l=>
+      `<a href="${l.url}" target="_blank" rel="noopener" class="text-[11px] font-bold text-white bg-rust px-2 py-0.5 rounded">📍 ${l.label}</a>`).join('')}</div>` : '';
   return `<div class="flex gap-3 relative z-10 pb-4 last:pb-0">
-    <span class="w-5 h-5 mt-0.5 shrink-0 flex items-center justify-center text-greekBlue" title="תחנה שהוספת">➕</span>
+    <span class="w-5 h-5 mt-0.5 shrink-0 flex items-center justify-center text-greekBlue" title="${pb ? 'מתוכנית ב׳' : 'תחנה שהוספת'}">${pb ? '🔀' : '➕'}</span>
     <div class="flex-1">
       <span class="font-bold text-sm">${cs.title}</span>
       <p class="text-xs opacity-70 mt-1">${cs.desc}</p>
+      ${pbLinks}
       ${stationNoteHtml(editKey)}
       <div class="flex gap-3 mt-1.5">
         <button onclick="editCustomStation(${dayId},${cs.id})" class="text-[11px] font-bold text-greekBlue hover:underline">עריכה</button>
@@ -980,6 +1084,7 @@ function removeCustomStation(dayId, id){
   customStations[dayId] = (customStations[dayId]||[]).filter(c=>c.id!==id);
   saveCustomStations();
   renderItinerary(currentActiveLeg());
+  renderPlanB();
 }
 function toggleStationAddForm(dayId){
   stationAddFormOpen[dayId] = !stationAddFormOpen[dayId];
@@ -1021,7 +1126,8 @@ function dayCard(day){
       <button onclick="addCustomStation(${day.id})" class="w-full bg-greekBlue text-white py-1.5 rounded-lg text-xs font-bold">הוספה</button>
     </div>
   </div>`;
-  const stations = defaultStationsHtml + customStationsHtml + addStationHtml;
+  const planbHint = day.leg === 'zagoria' ? `<button onclick="event.stopPropagation(); switchTab('planb')" class="relative z-10 w-full mt-2 text-xs font-bold text-greekBlue dark:text-sky-400 hover:underline text-right">🔀 לא מתאים היום? חלופות קצרות בתוכנית ב׳</button>` : '';
+  const stations = defaultStationsHtml + customStationsHtml + addStationHtml + planbHint;
   const isDone = !!dayDone[day.id];
   const isCollapsed = collapsedDays.hasOwnProperty(day.id) ? collapsedDays[day.id] : true;
   const notes = dayNotes[day.id] || [];
@@ -1305,6 +1411,127 @@ document.getElementById('legTabs').addEventListener('click', (e)=>{
   btn.dataset.active = "1";
   renderItinerary(btn.dataset.leg);
 });
+
+// ==================================================
+// RENDER: PLAN B
+// ==================================================
+function planbDayLabel(day){
+  return `${day.date.split(' · ')[0]} — ${day.route.split(' ← ').slice(-1)[0]}`;
+}
+
+function planbAddedTo(pbId){
+  // which Zagoria days already have this alternative as a station
+  return tripDays.filter(d=>d.leg==='zagoria' && (customStations[d.id]||[]).some(cs=>cs.planb===pbId));
+}
+
+function planBCard(p){
+  const open = !!planbOpen[p.id];
+  const picked = !!planbPicks[p.id];
+  const facts = [
+    ['איפה', p.near], ['מרחק', p.distance], ['עלייה', p.ascent],
+    ['זמן', p.duration], ['קושי', p.difficulty]
+  ].filter(([,v])=>v);
+  const factsHtml = facts.map(([l,v])=>`<div><span class="opacity-60">${l}: </span><b>${v}</b></div>`).join('');
+  const summary = [p.distance, p.difficulty].filter(Boolean).join(' · ');
+  const warn = p.warn ? `<p class="text-xs font-semibold text-rust mt-2">⚠️ ${p.warn}</p>` : '';
+  const links = (p.links||[]).map(l=>
+    `<a href="${l.url}" target="_blank" rel="noopener" class="text-xs font-bold text-white bg-rust px-3 py-1.5 rounded-full">📍 ${l.label}</a>`).join('');
+  const frame = (open && p.frame) ? `<iframe style="border:none;display:block" src="${p.frame}" width="100%" height="220" loading="lazy" class="mt-3 rounded-xl"></iframe>` : '';
+  const zDays = tripDays.filter(d=>d.leg==='zagoria');
+  const already = planbAddedTo(p.id);
+  const addedMsg = already.length ? `<p class="text-[11px] font-semibold text-zagoria mt-1.5">✓ נמצא במסלול: ${already.map(d=>d.date.split(' · ')[0]).join(', ')}</p>` : '';
+  return `<div class="bg-white dark:bg-slate-800 rounded-2xl shadow-md border ${picked ? 'border-athensC' : 'border-stone-200 dark:border-slate-700'} overflow-hidden" id="pb-${p.id}">
+    <div class="flex items-start gap-2 p-4 cursor-pointer" onclick="togglePlanBOpen('${p.id}')">
+      <button onclick="event.stopPropagation(); togglePlanBPick('${p.id}')" class="text-xl leading-none shrink-0 ${picked ? '' : 'opacity-30 grayscale'}" title="${picked ? 'הסרה מהמועדפים' : 'סימון כמועדף'}">⭐</button>
+      <div class="flex-1 min-w-0">
+        <h4 class="font-bold text-sm">${p.title}</h4>
+        <p class="text-xs opacity-60 mt-0.5">${summary}</p>
+      </div>
+      <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 shrink-0 transition-transform ${open ? 'rotate-180' : ''}"></i>
+    </div>
+    <div class="${open ? '' : 'hidden'} px-4 pb-4">
+      <div class="grid grid-cols-1 gap-y-1 text-xs rounded-xl bg-stone-50 dark:bg-slate-900 p-3">${factsHtml}</div>
+      <p class="text-sm opacity-80 mt-3">${p.desc}</p>
+      ${warn}
+      ${links ? `<div class="flex gap-2 flex-wrap mt-3">${links}</div>` : ''}
+      ${frame}
+      <div class="flex gap-2 mt-3">
+        <select id="pbDay-${p.id}" class="flex-1 min-w-0 px-2 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-slate-600 bg-stone-50 dark:bg-slate-900">
+          ${zDays.map(d=>`<option value="${d.id}">${planbDayLabel(d)}</option>`).join('')}
+        </select>
+        <button onclick="addPlanBToDay('${p.id}')" class="bg-greekBlue text-white px-3 rounded-lg text-xs font-bold shrink-0">הוספה ליום</button>
+      </div>
+      ${addedMsg}
+    </div>
+  </div>`;
+}
+
+function renderPlanB(){
+  const pickCount = Object.values(planbPicks).filter(Boolean).length;
+  const chip = (key, label) => `<button onclick="setPlanBFilter('${key}')" class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${planbFilter===key ? 'bg-greekBlue text-white' : 'bg-stone-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'}">${label}</button>`;
+  document.getElementById('planbFilters').innerHTML = chip('all','הכל') + chip('picks', `⭐ מועדפים (${pickCount})`);
+
+  const html = PLAN_B_GROUPS.map(g=>{
+    let items = PLAN_B.filter(p=>p.group===g.key);
+    if(planbFilter === 'picks') items = items.filter(p=>planbPicks[p.id]);
+    if(!items.length) return '';
+    return `<div>
+      <h3 class="font-bold text-base text-greekDark dark:text-slate-100">${g.label}</h3>
+      <p class="text-xs opacity-60 mb-2">${g.hint}</p>
+      <div class="space-y-3">${items.map(planBCard).join('')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('planbList').innerHTML = html ||
+    `<p class="text-sm opacity-60 text-center py-6">עוד לא סימנתם מועדפים. לחצו על ⭐ ליד חלופה כדי לשמור אותה כאן.</p>`;
+  safeIcons();
+}
+
+function setPlanBFilter(f){
+  planbFilter = f;
+  renderPlanB();
+}
+
+function togglePlanBOpen(id){
+  planbOpen[id] = !planbOpen[id];
+  renderPlanB();
+}
+
+function togglePlanBPick(id){
+  planbPicks[id] = !planbPicks[id];
+  if(!planbPicks[id]) delete planbPicks[id];
+  savePlanbPicks();
+  renderPlanB();
+}
+
+function addPlanBToDay(id){
+  const p = PLAN_B.find(x=>x.id===id);
+  const dayId = Number(document.getElementById(`pbDay-${id}`).value);
+  if(!customStations[dayId]) customStations[dayId] = [];
+  if(customStations[dayId].some(cs=>cs.planb===id)) return; // already there
+  const bits = [p.distance, p.difficulty].filter(Boolean).join(', ');
+  customStations[dayId].push({
+    id: stationIdCounter++,
+    title: `תוכנית ב׳: ${p.title}`,
+    desc: `${p.near}${bits ? ' (' + bits + ')' : ''}. ${p.desc}`,
+    planb: id
+  });
+  saveCustomStations();
+  renderItinerary(currentActiveLeg());
+  renderPlanB();
+}
+
+function jumpToPlanB(id){
+  document.getElementById('globalSearch').value = '';
+  document.getElementById('searchResults').classList.add('hidden');
+  planbFilter = 'all';
+  planbOpen[id] = true;
+  renderPlanB();
+  switchTab('planb');
+  setTimeout(()=>{
+    const el = document.getElementById(`pb-${id}`);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 100);
+}
 
 // ==================================================
 // RENDER: LODGING
@@ -1779,7 +2006,8 @@ document.getElementById('globalSearch').addEventListener('input', (e)=>{
       }
     });
   });
-  if(results.length === 0){
+  const pbResults = PLAN_B.filter(p=>(p.title + p.desc + (p.near||'')).includes(q));
+  if(results.length === 0 && pbResults.length === 0){
     box.innerHTML = `<div class="p-3 text-sm opacity-60">אין תוצאות</div>`;
   } else {
     box.innerHTML = results.map(r=>`
@@ -1787,6 +2015,11 @@ document.getElementById('globalSearch').addEventListener('input', (e)=>{
         onclick="jumpToStation(${r.day.id}, '${r.day.leg}')">
         <div class="font-semibold text-sm">${r.st.title}</div>
         <div class="text-xs opacity-60">${r.day.route} · ${r.day.date}</div>
+      </button>`).join('') + pbResults.map(p=>`
+      <button class="w-full text-right p-3 border-b border-stone-100 dark:border-slate-700 hover:bg-stone-50 dark:hover:bg-slate-700 last:border-0"
+        onclick="jumpToPlanB('${p.id}')">
+        <div class="font-semibold text-sm">🔀 ${p.title}</div>
+        <div class="text-xs opacity-60">תוכנית ב׳ · ${p.near}</div>
       </button>`).join('');
   }
   box.classList.remove('hidden');
@@ -1849,6 +2082,7 @@ document.getElementById('btnDownload').addEventListener('click', ()=>{
   renderNotes();
   renderDateStrip();
   renderItinerary('zagoria');
+  renderPlanB();
   renderLinks();
   renderDocuments();
   renderBudget();
