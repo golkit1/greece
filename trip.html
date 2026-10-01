@@ -353,6 +353,7 @@ const places = {
   nafpaktos: {lat:38.3901242, lon:21.8237024, name:"נאפפקטוס", text:"עיירת נמל ציורית עם מבצר ונציאני, על מפרץ קורינתוס."},
   vodafone:  {lat:39.6667149, lon:20.8524474, name:"וודפון (סים)", text:"סניף וודפון ביואנינה — לרכישת כרטיס סים מקומי."},
   lidl:      {lat:39.6887, lon:20.82744, name:"לידל", text:"בדרך מיואנינה לויצה — קניית אוכל ובלוני גז."},
+  sklavenitis:{lat:39.6853741, lon:20.8321729, name:"סקלאבניטיס", text:"סופרמרקט, אופציה חלופית להתארגנות בדרך מיואנינה לויצה."},
   drakolimni:{lat:39.9855, lon:20.7775, name:"אגן הדרקון", text:"אגם הרים קטן מתחת לפסגות הטיימפי, יעד הליכה פופולרי ממקלט אסטרקה."},
   tsepelovo: {lat:39.9319, lon:20.7975, name:"צפלובו", text:"כפר בזגוריה, נקודת ירידה ממקלט אסטרקה."},
   acheron:   {lat:39.3097, lon:20.5754, name:"מעיינות אכרון", text:"Acheron Springs, Vouvopotamos 480 62 — מעיינות טבעיים צלולים על נהר האכרון, סמוך לכפר גליקי."}
@@ -384,10 +385,10 @@ const tripDays = [
     quote:"רכישת סים מקומי, ואז כניסה לזגוריה — כפרי אבן וגשרי קשת עתיקים.",
     stations:[
       {title:"רכישת סים בוודפון", desc:"כרטיס סים מקומי לניווט ולאינטרנט לכל הטיול.", place:"vodafone", duration:"כ-5 דקות מהמלון ביואנינה"},
-      {title:"התארגנות בלידל — אוכל וגז", desc:"בדרך מיואנינה לויצה, נקודה נוחה להשלמת קניות ובלוני גז.", place:"lidl", duration:"כ-15 דקות מיואנינה"},
+      {title:"התארגנות בלידל — אוכל וגז", desc:"בדרך מיואנינה לויצה, נקודה נוחה להשלמת קניות ובלוני גז. אופציה נוספת: סופרמרקט סקלאבניטיס, ממש בסמוך.", place:"lidl", alt:["sklavenitis"], duration:"כ-15 דקות מיואנינה"},
       {title:"נסיעה לויצה — יעד הלינה", desc:"כביש הררי ומתפתל, נוף פתוח על עמק הוויקוס. Zelinia Rooms.", place:"vitsa", duration:"כ-25 דקות נוספות מלידל"},
       {title:"מסלול מעגלי בין הכפרים", desc:"הליכה מעגלית קצרה סביב ויצה והכפרים הסמוכים.", place:"vitsa",
-        trail:{ src:"https://mapy.com/s/dufazojage", start:"ויצה", end:"ויצה (מעגלי)" }}
+        trail:{ src:"https://en.frame.mapy.cz/s/dufazojage", start:"ויצה", end:"ויצה (מעגלי)" }}
     ]},
   { id:3, leg:'zagoria', date:"6.10 · יום שלישי", route:"מונודנדרי (חניה) ← גיא הויקוס ← מגאלו פאפינגקו", overnight:"מגאלו פאפינגקו",
     travel:{ time:"כ-7:15 שעות (15 ד' נסיעה + 7 ש' הליכה)", km:"כ-25 ק\"מ (10 בנסיעה + 15 בהליכה)" },
@@ -395,23 +396,23 @@ const tripDays = [
     stations:[
       {title:"נסיעה וחניה לפני הכניסה לוויקוס", desc:"חניון ליד מונודנדרי, נקודת הפתיחה למסלול.", place:"monodendri", duration:"כ-15 דקות מויצה"},
       {title:"הליכה דרך גיא הויקוס למגאלו פאפינגקו", desc:"מסלול הליכה מרשים דרך הגיא, מסתיים בכפר.", place:"zagoria", duration:"כ-7 שעות הליכה מחניון מונודנדרי",
-        trail:{ src:"https://mapy.com/s/rahedulama", distance:"15 ק\"מ", duration:"כ-7 שעות (ללא עצירות)", ascent:"כ-850 מטר", descent:"כ-800 מטר", start:"מונודנדרי", end:"מיקרו/מגאלו פאפינגקו" }}
+        trail:{ src:"https://en.frame.mapy.cz/s/rahedulama", distance:"15 ק\"מ", duration:"כ-7 שעות (ללא עצירות)", ascent:"כ-850 מטר", descent:"כ-800 מטר", start:"מונודנדרי", end:"מיקרו/מגאלו פאפינגקו" }}
     ]},
   { id:4, leg:'zagoria', date:"7.10 · יום רביעי", route:"מגאלו פאפינגקו ← מקלט אסטרקה ← אגן הדרקון (הלוך ושוב)", overnight:"מקלט אסטרקה",
     travel:{ time:"כ-6:30 שעות הליכה (הערכה)", km:"כ-13 ק\"מ (הערכה)" },
     quote:"הליכה מפאפינגקו לבקתה, ואז הליכת יום קצרה לאגן הדרקון וחזרה לאותה לינה.",
     stations:[
       {title:"הליכה ממגאלו פאפינגקו למקלט אסטרקה", desc:"עלייה מהכפר אל בקתת ההרים.", place:"astraka", duration:"כ-2:30 שעות הליכה מפאפינגקו (הערכה)",
-        trail:{ src:"https://mapy.com/s/gunatatafe", start:"מגאלו פאפינגקו", end:"מקלט אסטרקה" }},
+        trail:{ src:"https://en.frame.mapy.cz/s/gunatatafe", start:"מגאלו פאפינגקו", end:"מקלט אסטרקה" }},
       {title:"הליכת יום לאגן הדרקון וחזרה", desc:"אגם הרים קטן מתחת לפסגות הטיימפי, יעד הליכה פופולרי מהמקלט.", place:"drakolimni", duration:"כ-4 שעות הלוך ושוב מהמקלט (הערכה)",
-        trail:{ src:"https://mapy.com/s/razubokonu", start:"מקלט אסטרקה", end:"אגן הדרקון (הלוך ושוב)" }}
+        trail:{ src:"https://en.frame.mapy.cz/s/razubokonu", start:"מקלט אסטרקה", end:"אגן הדרקון (הלוך ושוב)" }}
     ]},
   { id:9, leg:'zagoria', date:"8.10 · יום חמישי", route:"מקלט אסטרקה ← צפלובו", overnight:"צפלובו (או עוד לילה?)",
     travel:{ time:"כ-5:20 שעות (5 ש' הליכה + 20 ד' מונית)", km:"כ-27 ק\"מ (הערכה)" },
     quote:"ירידה לצפלובו. משם מונית חזרה לרכב במונודנדרי, או החלטה בשטח להישאר עוד לילה.",
     stations:[
       {title:"הליכה מהבקתה לצפלובו", desc:"ירידה מההרים לכפר צפלובו.", place:"tsepelovo", duration:"כ-5 שעות הליכה מהמקלט (הערכה)",
-        trail:{ src:"https://mapy.com/s/kemusezula", start:"מקלט אסטרקה", end:"צפלובו" }},
+        trail:{ src:"https://en.frame.mapy.cz/s/kemusezula", start:"מקלט אסטרקה", end:"צפלובו" }},
       {title:"מונית חזרה לרכב / החלטה על לילה נוסף", desc:"הרכב נשאר בחניון מונודנדרי לאורך כל הטרק. אפשר לקחת מונית חזרה אליו, או להחליט בשטח להישאר עוד לילה.", place:"monodendri", duration:"כ-20 דקות מונית מצפלובו"}
     ]},
   { id:5, leg:'transit', date:"9–10.10 (בהתאם להחלטה על לילה נוסף) · יום שישי–שבת", route:"צפון יוון ← קלמבקה (מטאורה) ← מעיינות תרמופילי ← אתונה", overnight:"קוקאקי, אתונה",
@@ -446,7 +447,7 @@ const tripDays = [
       {title:"נסיעה לוויטינה — רכב ותיקים ליעד הלינה", desc:"משאירים את הרכב בוויטינה, כך שמקטע 4 מסתיים ליד הרכב.", place:"vytina", duration:"כ-35 דקות מדימיצאנה (הערכה)"},
       {title:"מונית לאלאטי", desc:"להזמין מראש דרך מקום הלינה בוויטינה.", place:"elati", duration:"כ-15 דקות (הערכה)"},
       {title:"מקטע 4 של המנאלון — מאלאטי לוויטינה", desc:"קטע חלק בלי קושי טכני, יורד לעמק נהר המילאון.", place:"vytina", duration:"כ-2:30–3:30 שעות הליכה",
-        trail:{ src:"https://mapy.com/s/mufosehefu", distance:"כ-8.5 ק\"מ", duration:"כ-2:30–3:30 שעות", start:"אלאטי", end:"ויטינה" }},
+        trail:{ src:"https://en.frame.mapy.cz/s/mufosehefu", distance:"כ-8.5 ק\"מ", duration:"כ-2:30–3:30 שעות", start:"אלאטי", end:"ויטינה" }},
       {title:"אופציה: מקטע 5 — מוויטינה לנימפסיה", desc:"קצר ויפה, אחד הפופולריים במסלול. בחלק מהמקומות השביל צר ויכול להיות סחוף אחרי גשם. בסוף — מונית קצרה חזרה לוויטינה.", place:"nymfasia", duration:"כ-2–2:30 שעות הליכה",
         trail:{ distance:"כ-5.6 ק\"מ", duration:"כ-2–2:30 שעות", start:"ויטינה", end:"נימפסיה" }}
     ]},
@@ -986,6 +987,13 @@ function stationRow(dayId, idx, st){
       <span class="text-xs font-semibold opacity-70">נווט אל ${p.name}:</span>
       ${navButtonsHtml(p.lat, p.lon, p.name, 'sm')}
     </div>`;
+    (st.alt||[]).forEach(k=>{
+      const a = places[k]; if(!a) return;
+      navHtml += `<div class="flex items-center gap-2 mt-1.5 flex-wrap">
+      <span class="text-xs font-semibold opacity-70">או אל ${a.name}:</span>
+      ${navButtonsHtml(a.lat, a.lon, a.name, 'sm')}
+    </div>`;
+    });
   }
   let trailHtml = '';
   if(st.trail){
